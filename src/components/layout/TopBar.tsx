@@ -11,9 +11,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export function TopBar() {
   const { user, profile, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
   return (
     <header className="h-16 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
       <div className="flex items-center justify-between h-full px-4">
@@ -63,7 +70,7 @@ export function TopBar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => window.location.href = '/impostazioni'}>
+              <DropdownMenuItem onClick={() => navigate('/impostazioni')}>
                 <User className="mr-2 h-4 w-4" />
                 Profilo e Impostazioni
               </DropdownMenuItem>
@@ -77,10 +84,7 @@ export function TopBar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="text-destructive cursor-pointer focus:text-destructive"
-                onClick={() => {
-                  logout();
-                  window.location.href = '/';
-                }}
+                onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Esci dall'account
