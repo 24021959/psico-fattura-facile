@@ -7,33 +7,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePazienti } from "@/hooks/usePazienti";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Paziente = Tables<'pazienti'>;
 
 interface PazienteFormProps {
-  onSave?: (paziente: any) => void;
-  paziente?: any;
+  paziente?: Paziente;
   trigger?: React.ReactNode;
 }
 
-export function PazienteForm({ onSave, paziente, trigger }: PazienteFormProps) {
+export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome: paziente?.nome || "",
     cognome: paziente?.cognome || "",
-    codiceFiscale: paziente?.codiceFiscale || "",
+    codice_fiscale: paziente?.codice_fiscale || "",
     email: paziente?.email || "",
     telefono: paziente?.telefono || "",
     indirizzo: paziente?.indirizzo || "",
     citta: paziente?.citta || "",
     cap: paziente?.cap || "",
+    data_nascita: paziente?.data_nascita || "",
     note: paziente?.note || ""
   });
+  const { createPaziente, updatePaziente } = usePazienti();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validazione base
-    if (!formData.nome || !formData.cognome || !formData.codiceFiscale) {
+    if (!formData.nome || !formData.cognome || !formData.codice_fiscale) {
       toast({
         variant: "destructive",
         title: "Errore",
@@ -43,7 +48,7 @@ export function PazienteForm({ onSave, paziente, trigger }: PazienteFormProps) {
     }
 
     // Validazione codice fiscale (lunghezza)
-    if (formData.codiceFiscale.length !== 16) {
+    if (formData.codice_fiscale.length !== 16) {
       toast({
         variant: "destructive",
         title: "Errore",
@@ -52,33 +57,32 @@ export function PazienteForm({ onSave, paziente, trigger }: PazienteFormProps) {
       return;
     }
 
-    const pazienteData = {
-      ...formData,
-      id: paziente?.id || Date.now().toString()
-    };
-
-    onSave?.(pazienteData);
-    
-    toast({
-      title: "Successo",
-      description: `Paziente ${paziente ? 'aggiornato' : 'creato'} correttamente`
-    });
-    
-    setOpen(false);
-    
-    // Reset form se nuovo paziente
-    if (!paziente) {
-      setFormData({
-        nome: "",
-        cognome: "",
-        codiceFiscale: "",
-        email: "",
-        telefono: "",
-        indirizzo: "",
-        citta: "",
-        cap: "",
-        note: ""
-      });
+    try {
+      if (paziente) {
+        await updatePaziente(paziente.id, formData);
+      } else {
+        await createPaziente(formData);
+      }
+      
+      setOpen(false);
+      
+      // Reset form se nuovo paziente
+      if (!paziente) {
+        setFormData({
+          nome: "",
+          cognome: "",
+          codice_fiscale: "",
+          email: "",
+          telefono: "",
+          indirizzo: "",
+          citta: "",
+          cap: "",
+          data_nascita: "",
+          note: ""
+        });
+      }
+    } catch (error) {
+      console.error('Error saving paziente:', error);
     }
   };
 
@@ -133,14 +137,24 @@ export function PazienteForm({ onSave, paziente, trigger }: PazienteFormProps) {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="codiceFiscale">Codice Fiscale *</Label>
+                <Label htmlFor="codice_fiscale">Codice Fiscale *</Label>
                 <Input
-                  id="codiceFiscale"
-                  value={formData.codiceFiscale}
-                  onChange={(e) => setFormData({...formData, codiceFiscale: e.target.value.toUpperCase()})}
+                  id="codice_fiscale"
+                  value={formData.codice_fiscale}
+                  onChange={(e) => setFormData({...formData, codice_fiscale: e.target.value.toUpperCase()})}
                   placeholder="RSSMRA80A01H501Z"
                   maxLength={16}
                   required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="data_nascita">Data di Nascita</Label>
+                <Input
+                  id="data_nascita"
+                  type="date"
+                  value={formData.data_nascita}
+                  onChange={(e) => setFormData({...formData, data_nascita: e.target.value})}
                 />
               </div>
             </CardContent>
