@@ -280,7 +280,24 @@ export default function Fatture() {
                       <Download className="mr-1 h-3 w-3" />
                       PDF
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        import('../utils/fatturaXML').then(({ generaEScaricaXML }) => {
+                          // Converti fattura al formato XML
+                          const fatturaXML = {
+                            ...fattura,
+                            paziente: {
+                              ...fattura.paziente,
+                              provincia: "MI",
+                              nazione: "IT"
+                            }
+                          };
+                          generaEScaricaXML(fatturaXML);
+                        });
+                      }}
+                    >
                       <Download className="mr-1 h-3 w-3" />
                       XML
                     </Button>
