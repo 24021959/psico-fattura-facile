@@ -8,41 +8,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Save, X, FileText, Calculator, User, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useFatture } from "@/hooks/useFatture";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Fattura = Tables<'fatture'>;
 
 interface FatturaFormProps {
-  onSave?: (fattura: any) => void;
-  fattura?: any;
+  fattura?: Fattura;
   trigger?: React.ReactNode;
+  pazientePreselezionato?: string;
 }
 
-export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
+export function FatturaForm({ fattura, trigger, pazientePreselezionato }: FatturaFormProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    pazienteId: fattura?.pazienteId || "",
-    prestazioneId: fattura?.prestazioneId || "",
-    dataPrestazione: fattura?.dataPrestazione || new Date().toISOString().split('T')[0],
-    metodoPagamento: fattura?.metodoPagamento || "",
-    note: fattura?.note || "",
-    importo: fattura?.importo || 0,
-    percentualeEnpap: fattura?.percentualeEnpap || 2,
-    enpapAddebitata: fattura?.enpapAddebitata ?? true
+    paziente_id: pazientePreselezionato || fattura?.paziente_id || "",
+    prestazione_id: "",
+    data_prestazione: new Date().toISOString().split('T')[0],
+    metodo_pagamento: "",
+    note: ""
   });
+  const { pazienti, prestazioni, createFattura } = useFatture();
   const { toast } = useToast();
-
-  // Mock data - in un'app reale verrebbe da API/database
-  const pazienti = [
-    { id: "1", nome: "Maria", cognome: "Bianchi", codiceFiscale: "BNCMRA85T65H501Z" },
-    { id: "2", nome: "Giuseppe", cognome: "Verdi", codiceFiscale: "VRDGPP75L12F205K" },
-    { id: "3", nome: "Anna", cognome: "Rossi", codiceFiscale: "RSSANN90P45B963L" }
-  ];
-
-  const prestazioni = [
-    { id: "1", nome: "Seduta Individuale", codice: "93.29.10", prezzo: 80 },
-    { id: "2", nome: "Seduta di Coppia", codice: "93.29.20", prezzo: 120 },
-    { id: "3", nome: "Consulenza Online", codice: "93.29.30", prezzo: 70 },
-    { id: "4", nome: "Prima Visita", codice: "93.29.40", prezzo: 100 },
-    { id: "5", nome: "Test Psicodiagnostici", codice: "93.29.50", prezzo: 150 }
-  ];
 
   const metodiPagamento = [
     "Contanti",
@@ -50,30 +37,21 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
     "Carta di Credito",
     "Assegno",
     "POS",
-    "Paypal"
+    "PayPal"
   ];
 
-  const prestazioneSelezionata = prestazioni.find(p => p.id === formData.prestazioneId);
-  const pazienteSelezionato = pazienti.find(p => p.id === formData.pazienteId);
+  const prestazioneSelezionata = prestazioni.find(p => p.id === formData.prestazione_id);
+  const pazienteSelezionato = pazienti.find(p => p.id === formData.paziente_id);
 
   // Calcoli automatici
-  const importoBase = prestazioneSelezionata?.prezzo || 0;
-  const importoEnpap = formData.enpapAddebitata ? (importoBase * formData.percentualeEnpap / 100) : 0;
+  const importoBase = prestazioneSelezionata?.prezzo_unitario ? Number(prestazioneSelezionata.prezzo_unitario) : 0;
+  const importoEnpap = importoBase * 2 / 100; // ENPAP 2%
   const totaleFinale = importoBase + importoEnpap;
 
-  const handlePrestazioneChange = (prestazioneId: string) => {
-    const prestazione = prestazioni.find(p => p.id === prestazioneId);
-    setFormData({
-      ...formData,
-      prestazioneId,
-      importo: prestazione?.prezzo || 0
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.pazienteId || !formData.prestazioneId || !formData.metodoPagamento) {
+    if (!formData.paziente_id || !formData.prestazione_id || !formData.metodo_pagamento) {
       toast({
         variant: "destructive",
         title: "Errore",
@@ -82,40 +60,39 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
       return;
     }
 
-    const fatturaData = {
-      ...formData,
-      id: fattura?.id || `2024-${String(Date.now()).slice(-3)}`,
-      numero: fattura?.numero || String(Date.now()).slice(-3),
-      anno: "2024",
-      data: formData.dataPrestazione,
-      paziente: pazienteSelezionato,
-      prestazione: prestazioneSelezionata,
-      importo: importoBase,
-      enpap: importoEnpap,
-      totale: totaleFinale,
-      stato: "emessa"
-    };
-
-    onSave?.(fatturaData);
-    
-    toast({
-      title: "Successo",
-      description: `Fattura ${fattura ? 'aggiornata' : 'creata'} correttamente`
-    });
-    
-    setOpen(false);
-    
-    if (!fattura) {
-      setFormData({
-        pazienteId: "",
-        prestazioneId: "",
-        dataPrestazione: new Date().toISOString().split('T')[0],
-        metodoPagamento: "",
-        note: "",
-        importo: 0,
-        percentualeEnpap: 2,
-        enpapAddebitata: true
+    try {
+      await createFattura({
+        paziente_id: formData.paziente_id,
+        prestazione_id: formData.prestazione_id,
+        data_prestazione: formData.data_prestazione,
+        metodo_pagamento: formData.metodo_pagamento,
+        note: formData.note || undefined
       });
+
+      
+      setOpen(false);
+      
+      // Reset form
+      if (!pazientePreselezionato) {
+        setFormData({
+          paziente_id: "",
+          prestazione_id: "",
+          data_prestazione: new Date().toISOString().split('T')[0],
+          metodo_pagamento: "",
+          note: ""
+        });
+      } else {
+        // Se paziente preselezionato, resetta solo gli altri campi
+        setFormData({
+          paziente_id: pazientePreselezionato,
+          prestazione_id: "",
+          data_prestazione: new Date().toISOString().split('T')[0],
+          metodo_pagamento: "",
+          note: ""
+        });
+      }
+    } catch (error) {
+      console.error('Error creating fattura:', error);
     }
   };
 
@@ -152,14 +129,14 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="paziente">Paziente *</Label>
-                <Select value={formData.pazienteId} onValueChange={(value) => setFormData({...formData, pazienteId: value})}>
+                <Select value={formData.paziente_id} onValueChange={(value) => setFormData({...formData, paziente_id: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona paziente" />
                   </SelectTrigger>
                   <SelectContent>
                     {pazienti.map((paziente) => (
                       <SelectItem key={paziente.id} value={paziente.id}>
-                        {paziente.nome} {paziente.cognome} - {paziente.codiceFiscale}
+                        {paziente.nome} {paziente.cognome} - {paziente.codice_fiscale || 'CF non inserito'}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -168,14 +145,14 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
               
               <div className="space-y-2">
                 <Label htmlFor="prestazione">Prestazione *</Label>
-                <Select value={formData.prestazioneId} onValueChange={handlePrestazioneChange}>
+                <Select value={formData.prestazione_id} onValueChange={(value) => setFormData({...formData, prestazione_id: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona prestazione" />
                   </SelectTrigger>
                   <SelectContent>
                     {prestazioni.map((prestazione) => (
                       <SelectItem key={prestazione.id} value={prestazione.id}>
-                        {prestazione.nome} - €{prestazione.prezzo} ({prestazione.codice})
+                        {prestazione.nome} - €{Number(prestazione.prezzo_unitario).toFixed(2)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -183,12 +160,12 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="dataPrestazione">Data Prestazione *</Label>
+                <Label htmlFor="data_prestazione">Data Prestazione *</Label>
                 <Input
-                  id="dataPrestazione"
+                  id="data_prestazione"
                   type="date"
-                  value={formData.dataPrestazione}
-                  onChange={(e) => setFormData({...formData, dataPrestazione: e.target.value})}
+                  value={formData.data_prestazione}
+                  onChange={(e) => setFormData({...formData, data_prestazione: e.target.value})}
                   required
                 />
               </div>
@@ -213,11 +190,11 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>ENPAP ({formData.percentualeEnpap}%)</Label>
+                  <Label>ENPAP (2%)</Label>
                   <div className="p-3 bg-muted rounded-lg">
                     <span className="text-lg font-semibold">€ {importoEnpap.toFixed(2)}</span>
                     <p className="text-xs text-muted-foreground">
-                      {formData.enpapAddebitata ? "Addebitata al cliente" : "A carico professionista"}
+                      Contributo cassa previdenziale
                     </p>
                   </div>
                 </div>
@@ -239,8 +216,8 @@ export function FatturaForm({ onSave, fattura, trigger }: FatturaFormProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="metodoPagamento">Metodo di Pagamento *</Label>
-                <Select value={formData.metodoPagamento} onValueChange={(value) => setFormData({...formData, metodoPagamento: value})}>
+                <Label htmlFor="metodo_pagamento">Metodo di Pagamento *</Label>
+                <Select value={formData.metodo_pagamento} onValueChange={(value) => setFormData({...formData, metodo_pagamento: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona metodo" />
                   </SelectTrigger>
