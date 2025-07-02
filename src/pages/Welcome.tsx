@@ -123,8 +123,12 @@ export default function Welcome() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" className="medical-gradient text-primary-foreground px-8">
-              Prova Gratis 30 Giorni
+            <Button 
+              size="lg" 
+              className="medical-gradient text-primary-foreground px-8"
+              onClick={() => window.location.href = '/login'}
+            >
+              Accedi / Registrati
             </Button>
             <Button size="lg" variant="outline">
               Guarda la Demo

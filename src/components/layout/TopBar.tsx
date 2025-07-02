@@ -63,21 +63,27 @@ export function TopBar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = '/impostazioni'}>
                 <User className="mr-2 h-4 w-4" />
-                Profilo
+                Profilo e Impostazioni
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell className="mr-2 h-4 w-4" />
                 Notifiche
+                <span className="ml-auto text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
+                  3
+                </span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                className="text-destructive cursor-pointer"
-                onClick={logout}
+                className="text-destructive cursor-pointer focus:text-destructive"
+                onClick={() => {
+                  logout();
+                  window.location.href = '/';
+                }}
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Esci
+                Esci dall'account
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
