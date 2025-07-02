@@ -33,10 +33,6 @@ function AppRoutes() {
     );
   }
 
-  if (!user) {
-    return <Login />;
-  }
-
   return (
     <Routes>
       <Route path="/" element={
@@ -70,8 +66,9 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/welcome" element={<Welcome />} />
+      <Route path="/login" element={<Login />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={user ? <NotFound /> : <Login />} />
     </Routes>
   );
 }
