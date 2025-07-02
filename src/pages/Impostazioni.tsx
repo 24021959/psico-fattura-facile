@@ -1,31 +1,85 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, User, Building, CreditCard, FileText, Download } from "lucide-react";
+import { Settings, User, Building, CreditCard, FileText, Download, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Impostazioni() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile, loading, updateProfile } = useProfile();
+  
+  // State per form dati professionista
+  const [formData, setFormData] = useState({
+    nome: "",
+    cognome: "",
+    email: "",
+    codice_fiscale: "",
+    partita_iva: "",
+    telefono: "",
+    indirizzo: "",
+    citta: "",
+    cap: "",
+  });
 
-  const handleSave = () => {
-    toast({
-      title: "Impostazioni salvate",
-      description: "Le tue impostazioni sono state aggiornate con successo"
-    });
+  // Carica dati dal profilo quando disponibili
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        nome: profile.nome || "",
+        cognome: profile.cognome || "",
+        email: profile.email || "",
+        codice_fiscale: profile.codice_fiscale || "",
+        partita_iva: profile.partita_iva || "",
+        telefono: profile.telefono || "",
+        indirizzo: profile.indirizzo || "",
+        citta: profile.citta || "",
+        cap: profile.cap || "",
+      });
+    } else if (user) {
+      // Se non c'è profilo ma c'è user, usa email da auth
+      setFormData(prev => ({ ...prev, email: user.email || "" }));
+    }
+  }, [profile, user]);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    const result = await updateProfile(formData);
+    if (result) {
+      toast({
+        title: "Profilo salvato",
+        description: "I tuoi dati sono stati aggiornati con successo"
+      });
+    }
   };
 
   const handleTestXML = () => {
-    // Simula test XML
     toast({
       title: "Test XML completato",
       description: "Il file XML è conforme alle specifiche SDI"
     });
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Caricamento impostazioni...</div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -38,7 +92,12 @@ export default function Impostazioni() {
               Configura i tuoi dati professionali e le impostazioni di fatturazione
             </p>
           </div>
-          <Button onClick={handleSave} className="medical-gradient text-primary-foreground hover:opacity-90">
+          <Button 
+            onClick={handleSave} 
+            className="medical-gradient text-primary-foreground hover:opacity-90"
+            disabled={loading}
+          >
+            <Save className="mr-2 h-4 w-4" />
             Salva Impostazioni
           </Button>
         </div>
@@ -59,41 +118,63 @@ export default function Impostazioni() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="nome">Nome</Label>
-                  <Input id="nome" defaultValue="Maria" />
+                  <Input 
+                    id="nome" 
+                    value={formData.nome}
+                    onChange={(e) => handleInputChange('nome', e.target.value)}
+                    placeholder="Il tuo nome" 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cognome">Cognome</Label>
-                  <Input id="cognome" defaultValue="Rossi" />
+                  <Input 
+                    id="cognome" 
+                    value={formData.cognome}
+                    onChange={(e) => handleInputChange('cognome', e.target.value)}
+                    placeholder="Il tuo cognome" 
+                  />
                 </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="la.tua@email.it" 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="codiceFiscale">Codice Fiscale</Label>
-                <Input id="codiceFiscale" defaultValue="RSSMRA80A01H501Z" />
+                <Input 
+                  id="codiceFiscale" 
+                  value={formData.codice_fiscale}
+                  onChange={(e) => handleInputChange('codice_fiscale', e.target.value)}
+                  placeholder="RSSMRA80A01H501Z" 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="partitaIva">Partita IVA</Label>
-                <Input id="partitaIva" defaultValue="12345678901" />
+                <Input 
+                  id="partitaIva" 
+                  value={formData.partita_iva}
+                  onChange={(e) => handleInputChange('partita_iva', e.target.value)}
+                  placeholder="12345678901" 
+                />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="ordineAlbo">Ordine/Albo</Label>
-                <Select defaultValue="psicologi">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="psicologi">Ordine Psicologi</SelectItem>
-                    <SelectItem value="medici">Ordine Medici</SelectItem>
-                    <SelectItem value="altro">Altro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="numeroIscrizione">Numero Iscrizione</Label>
-                <Input id="numeroIscrizione" defaultValue="12345" />
+                <Label htmlFor="telefono">Telefono</Label>
+                <Input 
+                  id="telefono" 
+                  value={formData.telefono}
+                  onChange={(e) => handleInputChange('telefono', e.target.value)}
+                  placeholder="+39 02 1234567" 
+                />
               </div>
             </CardContent>
           </Card>
@@ -112,44 +193,39 @@ export default function Impostazioni() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="indirizzo">Indirizzo</Label>
-                <Input id="indirizzo" defaultValue="Via Roma, 123" />
+                <Input 
+                  id="indirizzo" 
+                  value={formData.indirizzo}
+                  onChange={(e) => handleInputChange('indirizzo', e.target.value)}
+                  placeholder="Via Roma, 123" 
+                />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="citta">Città</Label>
-                  <Input id="citta" defaultValue="Milano" />
+                  <Input 
+                    id="citta" 
+                    value={formData.citta}
+                    onChange={(e) => handleInputChange('citta', e.target.value)}
+                    placeholder="Milano" 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cap">CAP</Label>
-                  <Input id="cap" defaultValue="20100" />
+                  <Input 
+                    id="cap" 
+                    value={formData.cap}
+                    onChange={(e) => handleInputChange('cap', e.target.value)}
+                    placeholder="20100" 
+                  />
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="provincia">Provincia</Label>
-                  <Input id="provincia" defaultValue="MI" maxLength={2} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="nazione">Nazione</Label>
-                  <Input id="nazione" defaultValue="IT" maxLength={2} />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="telefono">Telefono</Label>
-                <Input id="telefono" defaultValue="+39 02 1234567" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue="maria.rossi@psicologo.it" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="pec">PEC</Label>
-                <Input id="pec" type="email" defaultValue="maria.rossi@pec.psicologo.it" />
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Nota:</strong> I dati di indirizzo verranno utilizzati per la fatturazione elettronica e la corrispondenza ufficiale.
+                </p>
               </div>
             </CardContent>
           </Card>

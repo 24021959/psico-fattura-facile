@@ -1,0 +1,113 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Profile = Tables<'profiles'>;
+
+interface ProfileFormData {
+  nome: string;
+  cognome: string;
+  email: string;
+  codice_fiscale?: string;
+  partita_iva?: string;
+  telefono?: string;
+  indirizzo?: string;
+  citta?: string;
+  cap?: string;
+}
+
+export function useProfile() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No profile found, this is normal for new users
+          setProfile(null);
+        } else {
+          throw error;
+        }
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Errore",
+        description: "Errore nel caricamento del profilo"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (profileData: ProfileFormData) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          nome: profileData.nome,
+          cognome: profileData.cognome,
+          email: profileData.email,
+          codice_fiscale: profileData.codice_fiscale || null,
+          partita_iva: profileData.partita_iva || null,
+          telefono: profileData.telefono || null,
+          indirizzo: profileData.indirizzo || null,
+          citta: profileData.citta || null,
+          cap: profileData.cap || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setProfile(data);
+      toast({
+        title: "Successo",
+        description: "Profilo aggiornato correttamente"
+      });
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Errore",
+        description: "Errore nell'aggiornamento del profilo"
+      });
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  return {
+    profile,
+    loading,
+    updateProfile,
+    refreshProfile: fetchProfile
+  };
+}
