@@ -68,14 +68,14 @@ export function AppSidebar() {
               <img 
                 src={medInvoiceLogo} 
                 alt="MedInvoice Logo" 
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </div>
           ) : (
             <img 
               src={medInvoiceLogo} 
               alt="MedInvoice Logo" 
-              className="h-8 w-auto"
+              className="h-10 w-auto"
             />
           )}
         </div>

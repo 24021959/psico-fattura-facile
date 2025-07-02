@@ -164,7 +164,7 @@ export default function Welcome() {
             <img 
               src={medInvoiceLogo} 
               alt="MedInvoice Logo" 
-              className="h-10 w-auto"
+              className="h-16 w-auto"
             />
           </div>
           <Button 
@@ -412,7 +412,7 @@ export default function Welcome() {
               <img 
                 src={medInvoiceLogo} 
                 alt="MedInvoice Logo" 
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </div>
             <div className="text-center md:text-right">
