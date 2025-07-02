@@ -9,7 +9,248 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      fatture: {
+        Row: {
+          created_at: string
+          data_fattura: string
+          data_scadenza: string | null
+          id: string
+          iva_importo: number
+          iva_percentuale: number
+          note: string | null
+          numero_fattura: string
+          paziente_id: string
+          stato: string
+          subtotale: number
+          totale: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_fattura?: string
+          data_scadenza?: string | null
+          id?: string
+          iva_importo?: number
+          iva_percentuale?: number
+          note?: string | null
+          numero_fattura: string
+          paziente_id: string
+          stato?: string
+          subtotale?: number
+          totale?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_fattura?: string
+          data_scadenza?: string | null
+          id?: string
+          iva_importo?: number
+          iva_percentuale?: number
+          note?: string | null
+          numero_fattura?: string
+          paziente_id?: string
+          stato?: string
+          subtotale?: number
+          totale?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fatture_paziente_id_fkey"
+            columns: ["paziente_id"]
+            isOneToOne: false
+            referencedRelation: "pazienti"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pazienti: {
+        Row: {
+          cap: string | null
+          citta: string | null
+          codice_fiscale: string | null
+          cognome: string
+          created_at: string
+          data_nascita: string | null
+          email: string | null
+          id: string
+          indirizzo: string | null
+          nome: string
+          note: string | null
+          telefono: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cap?: string | null
+          citta?: string | null
+          codice_fiscale?: string | null
+          cognome: string
+          created_at?: string
+          data_nascita?: string | null
+          email?: string | null
+          id?: string
+          indirizzo?: string | null
+          nome: string
+          note?: string | null
+          telefono?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cap?: string | null
+          citta?: string | null
+          codice_fiscale?: string | null
+          cognome?: string
+          created_at?: string
+          data_nascita?: string | null
+          email?: string | null
+          id?: string
+          indirizzo?: string | null
+          nome?: string
+          note?: string | null
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      prestazioni: {
+        Row: {
+          attiva: boolean | null
+          created_at: string
+          descrizione: string | null
+          durata_minuti: number | null
+          id: string
+          nome: string
+          prezzo_unitario: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attiva?: boolean | null
+          created_at?: string
+          descrizione?: string | null
+          durata_minuti?: number | null
+          id?: string
+          nome: string
+          prezzo_unitario: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attiva?: boolean | null
+          created_at?: string
+          descrizione?: string | null
+          durata_minuti?: number | null
+          id?: string
+          nome?: string
+          prezzo_unitario?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          cap: string | null
+          citta: string | null
+          codice_fiscale: string | null
+          cognome: string
+          created_at: string
+          email: string
+          id: string
+          indirizzo: string | null
+          nome: string
+          partita_iva: string | null
+          telefono: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cap?: string | null
+          citta?: string | null
+          codice_fiscale?: string | null
+          cognome: string
+          created_at?: string
+          email: string
+          id?: string
+          indirizzo?: string | null
+          nome: string
+          partita_iva?: string | null
+          telefono?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cap?: string | null
+          citta?: string | null
+          codice_fiscale?: string | null
+          cognome?: string
+          created_at?: string
+          email?: string
+          id?: string
+          indirizzo?: string | null
+          nome?: string
+          partita_iva?: string | null
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      righe_fattura: {
+        Row: {
+          created_at: string
+          descrizione: string
+          fattura_id: string
+          id: string
+          prestazione_id: string | null
+          prezzo_unitario: number
+          quantita: number
+          totale: number
+        }
+        Insert: {
+          created_at?: string
+          descrizione: string
+          fattura_id: string
+          id?: string
+          prestazione_id?: string | null
+          prezzo_unitario: number
+          quantita?: number
+          totale: number
+        }
+        Update: {
+          created_at?: string
+          descrizione?: string
+          fattura_id?: string
+          id?: string
+          prestazione_id?: string | null
+          prezzo_unitario?: number
+          quantita?: number
+          totale?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "righe_fattura_fattura_id_fkey"
+            columns: ["fattura_id"]
+            isOneToOne: false
+            referencedRelation: "fatture"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "righe_fattura_prestazione_id_fkey"
+            columns: ["prestazione_id"]
+            isOneToOne: false
+            referencedRelation: "prestazioni"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

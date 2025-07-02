@@ -44,9 +44,9 @@ export default function Login() {
       return;
     }
 
-    const success = await login(loginData.email, loginData.password);
-    if (!success) {
-      setError("Credenziali non valide. Prova con: demo@psicologo.it / demo123");
+    const result = await login(loginData.email, loginData.password);
+    if (!result.success) {
+      setError(result.error || "Errore durante l'accesso");
     }
   };
 
@@ -74,18 +74,20 @@ export default function Login() {
       return;
     }
 
-    const success = await register(
+    const result = await register(
       registerData.email, 
       registerData.password, 
       registerData.nome, 
       registerData.cognome
     );
 
-    if (success) {
+    if (result.success) {
       toast({
         title: "Registrazione completata",
-        description: "Benvenuto in FatturaPsicologo!"
+        description: "Controlla la tua email per verificare l'account"
       });
+    } else {
+      setError(result.error || "Errore durante la registrazione");
     }
   };
 
@@ -96,14 +98,16 @@ export default function Login() {
       return;
     }
 
-    const success = await resetPassword(resetEmail);
-    if (success) {
+    const result = await resetPassword(resetEmail);
+    if (result.success) {
       toast({
         title: "Email inviata",
         description: "Controlla la tua casella email per le istruzioni di reset"
       });
       setShowResetForm(false);
       setResetEmail("");
+    } else {
+      setError(result.error || "Errore durante l'invio dell'email");
     }
   };
 

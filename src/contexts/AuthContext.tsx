@@ -1,19 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface Profile {
   id: string;
-  email: string;
+  user_id: string;
   nome: string;
   cognome: string;
-  isVerified: boolean;
+  email: string;
+  partita_iva?: string;
+  codice_fiscale?: string;
+  indirizzo?: string;
+  citta?: string;
+  cap?: string;
+  telefono?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, nome: string, cognome: string) => Promise<boolean>;
-  logout: () => void;
-  resetPassword: (email: string) => Promise<boolean>;
+  session: Session | null;
+  profile: Profile | null;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (email: string, password: string, nome: string, cognome: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
 }
 
@@ -29,81 +39,145 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simula il controllo dell'autenticazione al caricamento
-  useEffect(() => {
-    const savedUser = localStorage.getItem('fatturaPsicologo_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem('fatturaPsicologo_user');
+  // Fetch user profile
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return;
       }
+
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
-    setIsLoading(false);
+  };
+
+  // Initialize auth state
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Defer profile fetch to avoid recursion
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    // Simula chiamata API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock della validazione - in produzione sarebbe una chiamata API reale
-    if (email === 'demo@psicologo.it' && password === 'demo123') {
-      const userData: User = {
-        id: '1',
-        email: email,
-        nome: 'Maria',
-        cognome: 'Rossi',
-        isVerified: true
-      };
-      
-      setUser(userData);
-      localStorage.setItem('fatturaPsicologo_user', JSON.stringify(userData));
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setIsLoading(false);
+        return { success: false, error: error.message };
+      }
+
       setIsLoading(false);
-      return true;
+      return { success: true };
+    } catch (error: any) {
+      setIsLoading(false);
+      return { success: false, error: error.message };
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
-  const register = async (email: string, password: string, nome: string, cognome: string): Promise<boolean> => {
+  const register = async (email: string, password: string, nome: string, cognome: string) => {
     setIsLoading(true);
     
-    // Simula chiamata API
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock della registrazione
-    const userData: User = {
-      id: Date.now().toString(),
-      email: email,
-      nome: nome,
-      cognome: cognome,
-      isVerified: false
-    };
-    
-    setUser(userData);
-    localStorage.setItem('fatturaPsicologo_user', JSON.stringify(userData));
-    setIsLoading(false);
-    return true;
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            nome,
+            cognome,
+          },
+        },
+      });
+
+      if (error) {
+        setIsLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      setIsLoading(false);
+      return { success: true };
+    } catch (error: any) {
+      setIsLoading(false);
+      return { success: false, error: error.message };
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('fatturaPsicologo_user');
+    setSession(null);
+    setProfile(null);
   };
 
-  const resetPassword = async (email: string): Promise<boolean> => {
-    // Simula invio email di reset
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return true;
+  const resetPassword = async (email: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   };
 
   const value = {
     user,
+    session,
+    profile,
     login,
     register,
     logout,
