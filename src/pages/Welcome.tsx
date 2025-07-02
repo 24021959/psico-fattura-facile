@@ -215,68 +215,6 @@ export default function Welcome() {
                 </div>
               </div>
             </div>
-            <div className="lg:block hidden">
-              <div className="bg-white rounded-xl shadow-2xl p-6 border max-w-md">
-                <div className="space-y-4">
-                  {/* Header fattura */}
-                  <div className="border-b pb-3">
-                    <h3 className="font-bold text-lg text-gray-900">FATTURA N. 2024/001</h3>
-                    <p className="text-sm text-gray-600">Data: 02/07/2024</p>
-                  </div>
-                  
-                  {/* Dati professionista */}
-                  <div className="space-y-1">
-                    <p className="font-semibold text-gray-900">Dr. Mario Rossi</p>
-                    <p className="text-sm text-gray-600">Psicologo</p>
-                    <p className="text-sm text-gray-600">P.IVA: 12345678901</p>
-                  </div>
-                  
-                  {/* Dati paziente */}
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-600">Cliente:</p>
-                    <p className="font-medium text-gray-900">Giuseppe Verdi</p>
-                    <p className="text-sm text-gray-600">CF: VRDGPP80A01H501Z</p>
-                  </div>
-                  
-                  {/* Prestazione */}
-                  <div className="bg-blue-50 p-3 rounded">
-                    <p className="text-sm font-medium text-gray-900">Consulenza psicologica</p>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-sm text-gray-600">Quantità: 1</span>
-                      <span className="text-sm font-semibold text-gray-900">€ 80,00</span>
-                    </div>
-                  </div>
-                  
-                  {/* Totali */}
-                  <div className="border-t pt-3 space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>Subtotale:</span>
-                      <span>€ 80,00</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>IVA esente (Art. 10):</span>
-                      <span>€ 0,00</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Contributo ENPAP (2%):</span>
-                      <span>€ 1,60</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg border-t pt-2">
-                      <span>TOTALE:</span>
-                      <span className="text-blue-600">€ 81,60</span>
-                    </div>
-                  </div>
-                  
-                  {/* Badge */}
-                  <div className="text-center">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Conforme normative
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
