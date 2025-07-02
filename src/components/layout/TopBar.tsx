@@ -1,4 +1,4 @@
-import { Bell, User, Menu } from "lucide-react";
+import { Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -10,8 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function TopBar() {
+  const { user, logout } = useAuth();
   return (
     <header className="h-16 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
       <div className="flex items-center justify-between h-full px-4">
@@ -44,7 +46,7 @@ export function TopBar() {
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/placeholder-avatar.jpg" alt="Profilo" />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    Dr
+                    {user?.nome?.charAt(0)}{user?.cognome?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -52,9 +54,11 @@ export function TopBar() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Dr. Mario Rossi</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user?.nome} {user?.cognome}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    mario.rossi@psicologo.it
+                    {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -68,7 +72,11 @@ export function TopBar() {
                 Notifiche
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem 
+                className="text-destructive cursor-pointer"
+                onClick={logout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
                 Esci
               </DropdownMenuItem>
             </DropdownMenuContent>
