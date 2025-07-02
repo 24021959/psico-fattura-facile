@@ -1,40 +1,30 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { TrendingUp, Euro, Users, FileText, Calendar, Download } from "lucide-react";
 
 export default function Statistiche() {
   // Mock data per i grafici
   const fatturatoMensile = [
-    { mese: 'Gen', importo: 3200 },
-    { mese: 'Feb', importo: 3800 },
-    { mese: 'Mar', importo: 4100 },
-    { mese: 'Apr', importo: 3900 },
-    { mese: 'Mag', importo: 4500 },
-    { mese: 'Giu', importo: 4200 },
-    { mese: 'Lug', importo: 3800 },
-    { mese: 'Ago', importo: 3200 },
-    { mese: 'Set', importo: 4800 },
-    { mese: 'Ott', importo: 5100 },
-    { mese: 'Nov', importo: 4900 },
-    { mese: 'Dic', importo: 4250 }
+    { mese: 'Gen', importo: 3200, altezza: 32 },
+    { mese: 'Feb', importo: 3800, altezza: 38 },
+    { mese: 'Mar', importo: 4100, altezza: 41 },
+    { mese: 'Apr', importo: 3900, altezza: 39 },
+    { mese: 'Mag', importo: 4500, altezza: 45 },
+    { mese: 'Giu', importo: 4200, altezza: 42 },
+    { mese: 'Lug', importo: 3800, altezza: 38 },
+    { mese: 'Ago', importo: 3200, altezza: 32 },
+    { mese: 'Set', importo: 4800, altezza: 48 },
+    { mese: 'Ott', importo: 5100, altezza: 51 },
+    { mese: 'Nov', importo: 4900, altezza: 49 },
+    { mese: 'Dic', importo: 4250, altezza: 42 }
   ];
 
   const prestazioniDistribuzione = [
-    { nome: 'Seduta Individuale', valore: 45, colore: '#007BFF' },
-    { nome: 'Seduta di Coppia', valore: 25, colore: '#28A745' },
-    { nome: 'Consulenza Online', valore: 20, colore: '#FFC107' },
-    { nome: 'Prima Visita', valore: 10, colore: '#DC3545' }
-  ];
-
-  const pazientiTrend = [
-    { mese: 'Gen', nuovi: 3, totali: 18 },
-    { mese: 'Feb', nuovi: 5, totali: 23 },
-    { mese: 'Mar', nuovi: 2, totali: 25 },
-    { mese: 'Apr', nuovi: 4, totali: 29 },
-    { mese: 'Mag', nuovi: 6, totali: 35 },
-    { mese: 'Giu', nuovi: 3, totali: 38 }
+    { nome: 'Seduta Individuale', valore: 45, colore: 'bg-primary' },
+    { nome: 'Seduta di Coppia', valore: 25, colore: 'bg-success' },
+    { nome: 'Consulenza Online', valore: 20, colore: 'bg-warning' },
+    { nome: 'Prima Visita', valore: 10, colore: 'bg-destructive' }
   ];
 
   const generaReport = () => {
@@ -136,15 +126,23 @@ export default function Statistiche() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={fatturatoMensile}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mese" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`€ ${value}`, 'Fatturato']} />
-                  <Bar dataKey="importo" fill="#007BFF" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="space-y-4">
+                <div className="flex items-end justify-between h-48 gap-2">
+                  {fatturatoMensile.map((item, index) => (
+                    <div key={index} className="flex flex-col items-center gap-1 flex-1">
+                      <div className="text-xs text-muted-foreground">€{(item.importo/100).toFixed(0)}k</div>
+                      <div 
+                        className="bg-primary rounded-t w-full min-h-[4px] transition-all duration-300 hover:bg-primary-hover"
+                        style={{ height: `${item.altezza * 2}px` }}
+                      ></div>
+                      <div className="text-xs font-medium">{item.mese}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Fatturato mensile in migliaia di euro</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -157,25 +155,25 @@ export default function Statistiche() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={prestazioniDistribuzione}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ nome, valore }) => `${nome}: ${valore}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="valore"
-                  >
-                    {prestazioniDistribuzione.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.colore} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="space-y-4">
+                {prestazioniDistribuzione.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{item.nome}</span>
+                      <span className="text-sm font-bold">{item.valore}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-3">
+                      <div 
+                        className={`h-3 rounded-full ${item.colore} transition-all duration-500`}
+                        style={{ width: `${item.valore}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+                <div className="text-center pt-2">
+                  <p className="text-sm text-muted-foreground">Distribuzione tipologie di prestazioni</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -191,16 +189,29 @@ export default function Statistiche() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={pazientiTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mese" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="nuovi" stroke="#28A745" strokeWidth={2} name="Nuovi" />
-                  <Line type="monotone" dataKey="totali" stroke="#007BFF" strokeWidth={2} name="Totali" />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">+21</div>
+                    <div className="text-sm text-muted-foreground">Nuovi Pazienti</div>
+                    <div className="text-xs text-success">2024</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-success">38</div>
+                    <div className="text-sm text-muted-foreground">Totale Attivi</div>
+                    <div className="text-xs text-muted-foreground">Dicembre</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Crescita mensile media</span>
+                    <span className="font-medium text-success">+3.5</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-success h-2 rounded-full" style={{ width: '75%' }}></div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
