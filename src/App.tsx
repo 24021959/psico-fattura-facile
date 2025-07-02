@@ -12,6 +12,7 @@ import Fatture from "./pages/Fatture";
 import Statistiche from "./pages/Statistiche";
 import Impostazioni from "./pages/Impostazioni";
 import Login from "./pages/Login";
+import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ function AppRoutes() {
           <Impostazioni />
         </ProtectedRoute>
       } />
+      <Route path="/welcome" element={<Welcome />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
