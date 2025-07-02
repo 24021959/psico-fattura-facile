@@ -9,53 +9,42 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Plus, Save, X, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePrestazioni } from "@/hooks/usePrestazioni";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Prestazione = Tables<'prestazioni'>;
 
 interface PrestazioneFormProps {
-  onSave?: (prestazione: any) => void;
-  prestazione?: any;
+  prestazione?: Prestazione;
   trigger?: React.ReactNode;
 }
 
-export function PrestazioneForm({ onSave, prestazione, trigger }: PrestazioneFormProps) {
+export function PrestazioneForm({ prestazione, trigger }: PrestazioneFormProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    codice: prestazione?.codice || "",
     nome: prestazione?.nome || "",
     descrizione: prestazione?.descrizione || "",
-    prezzo: prestazione?.prezzo || "",
-    durata: prestazione?.durata || "",
-    categoria: prestazione?.categoria || "",
-    ivaEsente: prestazione?.ivaEsente ?? true,
-    cassePrevidenziali: prestazione?.cassePrevidenziali ?? true,
-    percentualeCassa: prestazione?.percentualeCassa || "2"
+    prezzo_unitario: prestazione?.prezzo_unitario?.toString() || "",
+    durata_minuti: prestazione?.durata_minuti?.toString() || "60",
+    attiva: prestazione?.attiva ?? true
   });
+  const { createPrestazione, updatePrestazione } = usePrestazioni();
   const { toast } = useToast();
 
-  const categorie = [
-    "Individuale",
-    "Coppia", 
-    "Familiare",
-    "Gruppo",
-    "Online",
-    "Valutazione",
-    "Test",
-    "Consulenza"
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validazione base
-    if (!formData.nome || !formData.codice || !formData.prezzo) {
+    if (!formData.nome || !formData.prezzo_unitario) {
       toast({
         variant: "destructive",
         title: "Errore",
-        description: "Nome, codice e prezzo sono obbligatori"
+        description: "Nome e prezzo sono obbligatori"
       });
       return;
     }
 
-    if (isNaN(Number(formData.prezzo)) || Number(formData.prezzo) <= 0) {
+    if (isNaN(Number(formData.prezzo_unitario)) || Number(formData.prezzo_unitario) <= 0) {
       toast({
         variant: "destructive",
         title: "Errore",
@@ -65,35 +54,34 @@ export function PrestazioneForm({ onSave, prestazione, trigger }: PrestazioneFor
     }
 
     const prestazioneData = {
-      ...formData,
-      id: prestazione?.id || Date.now().toString(),
-      prezzo: Number(formData.prezzo),
-      durata: Number(formData.durata),
-      percentualeCassa: Number(formData.percentualeCassa)
+      nome: formData.nome,
+      descrizione: formData.descrizione || null,
+      prezzo_unitario: Number(formData.prezzo_unitario),
+      durata_minuti: formData.durata_minuti ? Number(formData.durata_minuti) : 60,
+      attiva: formData.attiva
     };
 
-    onSave?.(prestazioneData);
-    
-    toast({
-      title: "Successo",
-      description: `Prestazione ${prestazione ? 'aggiornata' : 'creata'} correttamente`
-    });
-    
-    setOpen(false);
-    
-    // Reset form se nuova prestazione
-    if (!prestazione) {
-      setFormData({
-        codice: "",
-        nome: "",
-        descrizione: "",
-        prezzo: "",
-        durata: "",
-        categoria: "",
-        ivaEsente: true,
-        cassePrevidenziali: true,
-        percentualeCassa: "2"
-      });
+    try {
+      if (prestazione) {
+        await updatePrestazione(prestazione.id, prestazioneData);
+      } else {
+        await createPrestazione(prestazioneData);
+      }
+      
+      setOpen(false);
+      
+      // Reset form se nuova prestazione
+      if (!prestazione) {
+        setFormData({
+          nome: "",
+          descrizione: "",
+          prezzo_unitario: "",
+          durata_minuti: "60",
+          attiva: true
+        });
+      }
+    } catch (error) {
+      console.error('Error saving prestazione:', error);
     }
   };
 
@@ -127,27 +115,15 @@ export function PrestazioneForm({ onSave, prestazione, trigger }: PrestazioneFor
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">Nome Prestazione *</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({...formData, nome: e.target.value})}
-                    placeholder="Seduta Individuale"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="codice">Codice Prestazione *</Label>
-                  <Input
-                    id="codice"
-                    value={formData.codice}
-                    onChange={(e) => setFormData({...formData, codice: e.target.value})}
-                    placeholder="93.29.10"
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="nome">Nome Prestazione *</Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                  placeholder="Seduta Individuale"
+                  required
+                />
               </div>
               
               <div className="space-y-2">
@@ -160,20 +136,6 @@ export function PrestazioneForm({ onSave, prestazione, trigger }: PrestazioneFor
                   rows={3}
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="categoria">Categoria</Label>
-                <Select value={formData.categoria} onValueChange={(value) => setFormData({...formData, categoria: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categorie.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </Card>
 
@@ -185,86 +147,55 @@ export function PrestazioneForm({ onSave, prestazione, trigger }: PrestazioneFor
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="prezzo">Prezzo (€) *</Label>
+                  <Label htmlFor="prezzo_unitario">Prezzo (€) *</Label>
                   <Input
-                    id="prezzo"
+                    id="prezzo_unitario"
                     type="number"
                     step="0.01"
                     min="0"
-                    value={formData.prezzo}
-                    onChange={(e) => setFormData({...formData, prezzo: e.target.value})}
+                    value={formData.prezzo_unitario}
+                    onChange={(e) => setFormData({...formData, prezzo_unitario: e.target.value})}
                     placeholder="80.00"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="durata">Durata (minuti)</Label>
+                  <Label htmlFor="durata_minuti">Durata (minuti)</Label>
                   <Input
-                    id="durata"
+                    id="durata_minuti"
                     type="number"
                     min="0"
-                    value={formData.durata}
-                    onChange={(e) => setFormData({...formData, durata: e.target.value})}
-                    placeholder="50"
+                    value={formData.durata_minuti}
+                    onChange={(e) => setFormData({...formData, durata_minuti: e.target.value})}
+                    placeholder="60"
                   />
                 </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Prestazione Attiva</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Rendi disponibile questa prestazione per le fatture
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.attiva}
+                  onCheckedChange={(checked) => setFormData({...formData, attiva: checked})}
+                />
               </div>
             </CardContent>
           </Card>
 
-          {/* Aspetti Fiscali */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Aspetti Fiscali</CardTitle>
-              <CardDescription>
-                Configurazione fiscale per la prestazione sanitaria
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>IVA Esente</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Art. 10 n. 18 DPR 633/72 - Prestazioni sanitarie
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.ivaEsente}
-                  onCheckedChange={(checked) => setFormData({...formData, ivaEsente: checked})}
-                />
+          {/* Info Fiscali */}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-sm space-y-1">
+                <p><strong>Normativa Applicata:</strong></p>
+                <p>• IVA Esente: Art. 10 n. 18 DPR 633/72 - Prestazioni sanitarie</p>
+                <p>• Contributo ENPAP: 2% applicabile in fatturazione</p>
+                <p>• Regime forfettario: Compatibile con prestazioni sanitarie</p>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Casse Previdenziali</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Applica contributo ENPAP
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.cassePrevidenziali}
-                  onCheckedChange={(checked) => setFormData({...formData, cassePrevidenziali: checked})}
-                />
-              </div>
-              
-              {formData.cassePrevidenziali && (
-                <div className="space-y-2">
-                  <Label htmlFor="percentualeCassa">Percentuale Cassa (%)</Label>
-                  <Input
-                    id="percentualeCassa"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="10"
-                    value={formData.percentualeCassa}
-                    onChange={(e) => setFormData({...formData, percentualeCassa: e.target.value})}
-                    placeholder="2.0"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    ENPAP standard: 2% per psicologi
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
 
