@@ -1,8 +1,9 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Plus, Search, Phone, Mail } from "lucide-react";
+import { Users, Plus, Search, Phone, Mail, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PazienteForm } from "@/components/forms/PazienteForm";
 
 export default function Pazienti() {
   return (
@@ -16,10 +17,7 @@ export default function Pazienti() {
               Gestisci l'anagrafica dei tuoi pazienti
             </p>
           </div>
-          <Button className="medical-gradient text-primary-foreground hover:opacity-90">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuovo Paziente
-          </Button>
+          <PazienteForm />
         </div>
 
         {/* Search and Filters */}
@@ -66,9 +64,22 @@ export default function Pazienti() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    Modifica
-                  </Button>
+                  <PazienteForm 
+                    paziente={{
+                      id: "1",
+                      nome: "Maria",
+                      cognome: "Bianchi", 
+                      codiceFiscale: "BNCMRA85T65H501Z",
+                      email: "maria.bianchi@email.it",
+                      telefono: "+39 338 123 4567"
+                    }}
+                    trigger={
+                      <Button variant="outline" size="sm">
+                        <Edit className="mr-1 h-3 w-3" />
+                        Modifica
+                      </Button>
+                    }
+                  />
                   <Button variant="outline" size="sm">
                     Fatture
                   </Button>
