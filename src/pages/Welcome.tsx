@@ -71,7 +71,7 @@ export default function Welcome() {
         "Supporto email"
       ],
       popular: false,
-      cta: "Inizia Gratis",
+      cta: "Attiva Gratis",
       highlight: false
     },
     {
@@ -197,7 +197,7 @@ export default function Welcome() {
                   className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4"
                   onClick={() => navigate('/login')}
                 >
-                  Prova gratis – Nessuna carta richiesta
+                  Attiva gratis – Nessuna carta richiesta
                 </Button>
                 <Button size="lg" variant="outline" className="text-lg px-8 py-4">
                   <Play className="mr-2 h-5 w-5" />
@@ -354,8 +354,8 @@ export default function Welcome() {
       <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Inizia gratis, cresci quando vuoi</h3>
-            <p className="text-gray-600">Nessun costo nascosto, nessun vincolo contrattuale</p>
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Attiva gratis, cresci quando vuoi</h3>
+            <p className="text-gray-600">Nessun costo nascosto, nessuna carta richiesta</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {plans.map((plan) => (
@@ -461,20 +461,20 @@ export default function Welcome() {
       <section className="py-20 px-4 bg-blue-600">
         <div className="container mx-auto max-w-4xl text-center">
           <h3 className="text-4xl font-bold text-white mb-6">
-            Inizia ora – 5 fatture gratis. Senza carta.
+            Attiva ora – 5 fatture gratis. Senza carta.
           </h3>
           <p className="text-blue-100 text-xl mb-8 max-w-2xl mx-auto">
-            Unisciti a centinaia di professionisti sanitari che hanno semplificato la loro fatturazione
+            Unisciti a centinaia di professionisti sanitari che hanno attivato gratuitamente il servizio
           </p>
           <Button 
             size="lg" 
             className="bg-white text-blue-600 hover:bg-gray-100 text-xl px-12 py-4 rounded-lg font-semibold"
             onClick={() => navigate('/login')}
           >
-            Inizia Subito – È Gratis
+            Attiva Subito – È Gratis
           </Button>
           <p className="text-blue-200 text-sm mt-6">
-            ✓ Setup in 2 minuti ✓ Nessun impegno ✓ Supporto in italiano
+            ✓ Attivazione gratuita in 2 minuti ✓ Nessuna carta richiesta ✓ Supporto in italiano
           </p>
         </div>
       </section>
@@ -509,8 +509,8 @@ export default function Welcome() {
         <Button 
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
           onClick={() => navigate('/login')}
-        >
-          Prova Gratis – 5 fatture incluse
+          >
+            Attiva Gratis – 5 fatture incluse
         </Button>
       </div>
     </div>
