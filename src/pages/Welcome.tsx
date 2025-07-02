@@ -179,41 +179,33 @@ export default function Welcome() {
 
       {/* Hero Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-blue-50 to-white">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Fatture sanitarie.<br />
-                <span className="text-blue-600">In 3 clic.</span><br />
-                Nessuna complicazione.
-              </h2>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Crea e scarica fatture a norma per prestazioni sanitarie in pochi secondi. 
-                Senza agenda. Senza burocrazia.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button 
-                  size="lg" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4"
-                  onClick={() => navigate('/login')}
-                >
-                  Attiva gratis – Nessuna carta richiesta
-                </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 py-4">
-                  <Play className="mr-2 h-5 w-5" />
-                  Guarda la demo
-                </Button>
-              </div>
-              <div className="flex items-center gap-6 text-sm text-gray-500">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Setup in 2 minuti</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-green-500" />
-                  <span>Conforme normative</span>
-                </div>
-              </div>
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Fatture sanitarie.<br />
+            <span className="text-blue-600">In 3 clic.</span><br />
+            Nessuna complicazione.
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
+            Crea e scarica fatture a norma per prestazioni sanitarie in pochi secondi. 
+            Senza agenda. Senza burocrazia.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4"
+              onClick={() => navigate('/login')}
+            >
+              Attiva gratis – Nessuna carta richiesta
+            </Button>
+          </div>
+          <div className="flex items-center gap-6 text-sm text-gray-500 justify-center">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span>Setup in 2 minuti</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-green-500" />
+              <span>Conforme normative</span>
             </div>
           </div>
         </div>
@@ -259,10 +251,6 @@ export default function Welcome() {
               </div>
             </div>
           </div>
-          <Button size="lg" variant="outline" className="text-lg px-8">
-            <Play className="mr-2 h-5 w-5" />
-            Guarda video demo (15 sec)
-          </Button>
         </div>
       </section>
 
