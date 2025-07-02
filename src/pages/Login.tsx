@@ -143,7 +143,7 @@ export default function Login() {
           <div className="mx-auto w-16 h-16 bg-primary rounded-lg flex items-center justify-center mb-4">
             <span className="text-primary-foreground font-bold text-2xl">ψ</span>
           </div>
-          <CardTitle className="text-2xl">FatturaPsicologo</CardTitle>
+          <CardTitle className="text-2xl">MedInvoice</CardTitle>
           <CardDescription>
             Software di fatturazione per professionisti sanitari
           </CardDescription>

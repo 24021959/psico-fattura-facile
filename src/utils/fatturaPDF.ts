@@ -247,7 +247,7 @@ export class FatturaPDFGenerator {
     this.doc.setTextColor(128, 128, 128);
     
     const footerY = this.pageHeight - 10;
-    this.doc.text('FatturaPsicologo - Software di fatturazione per professionisti sanitari', this.margin, footerY);
+    this.doc.text('MedInvoice - Software di fatturazione per professionisti sanitari', this.margin, footerY);
     
     if (professionista.iban) {
       this.doc.text(`IBAN: ${professionista.iban}`, this.pageWidth - this.margin - 80, footerY);

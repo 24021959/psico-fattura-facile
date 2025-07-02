@@ -66,7 +66,7 @@ export default function Welcome() {
       description: "Per iniziare subito",
       features: [
         "5 fatture al mese",
-        "Watermark FatturaSanitaria",
+        "Watermark MedInvoice",
         "PDF scaricabile",
         "Supporto email"
       ],
@@ -164,7 +164,7 @@ export default function Welcome() {
               <span className="text-white font-bold text-xl">F</span>
             </div>
             <div>
-              <h1 className="font-bold text-xl text-gray-900">FatturaSanitaria</h1>
+              <h1 className="font-bold text-xl text-gray-900">MedInvoice</h1>
               <p className="text-xs text-gray-500">Software di fatturazione sanitaria</p>
             </div>
           </div>
@@ -414,7 +414,7 @@ export default function Welcome() {
                 <span className="text-white font-bold">F</span>
               </div>
               <div>
-                <span className="font-semibold text-lg">FatturaSanitaria</span>
+                <span className="font-semibold text-lg">MedInvoice</span>
                 <p className="text-gray-400 text-sm">Software per professionisti sanitari</p>
               </div>
             </div>
@@ -423,7 +423,7 @@ export default function Welcome() {
                 Conforme alle normative italiane • GDPR compliant
               </p>
               <p className="text-gray-500 text-xs mt-1">
-                © 2024 FatturaSanitaria. Tutti i diritti riservati.
+                © 2024 MedInvoice. Tutti i diritti riservati.
               </p>
             </div>
           </div>

@@ -67,7 +67,7 @@ export function AppSidebar() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">ψ</span>
               </div>
-              <span className="font-semibold text-foreground">FatturaPsicologo</span>
+              <span className="font-semibold text-foreground">MedInvoice</span>
             </div>
           ) : (
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

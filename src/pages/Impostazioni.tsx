@@ -408,7 +408,7 @@ export default function Impostazioni() {
                 defaultValue="Prestazione sanitaria esente IVA ai sensi dell'Art. 10 n. 18 DPR 633/72.
 Contributo ENPAP 2% come da normativa vigente.
 Trattamento dati personali ex art. 9 Reg. UE 679/2016 - GDPR.
-Fattura emessa tramite FatturaPsicologo."
+Fattura emessa tramite MedInvoice."
               />
             </div>
           </CardContent>
