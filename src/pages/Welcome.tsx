@@ -26,6 +26,7 @@ import {
   Quote
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import medInvoiceLogo from "@/assets/medinvoice-logo.png";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -160,13 +161,11 @@ export default function Welcome() {
       <header className="border-b border-gray-100 bg-white/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">F</span>
-            </div>
-            <div>
-              <h1 className="font-bold text-xl text-gray-900">MedInvoice</h1>
-              <p className="text-xs text-gray-500">Software di fatturazione sanitaria</p>
-            </div>
+            <img 
+              src={medInvoiceLogo} 
+              alt="MedInvoice Logo" 
+              className="h-10 w-auto"
+            />
           </div>
           <Button 
             onClick={() => navigate('/login')}
@@ -410,13 +409,11 @@ export default function Welcome() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-3 mb-6 md:mb-0">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">F</span>
-              </div>
-              <div>
-                <span className="font-semibold text-lg">MedInvoice</span>
-                <p className="text-gray-400 text-sm">Software per professionisti sanitari</p>
-              </div>
+              <img 
+                src={medInvoiceLogo} 
+                alt="MedInvoice Logo" 
+                className="h-8 w-auto"
+              />
             </div>
             <div className="text-center md:text-right">
               <p className="text-gray-400 text-sm">

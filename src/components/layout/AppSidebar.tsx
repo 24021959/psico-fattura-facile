@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, NavLink } from "react-router-dom";
+import medInvoiceLogo from "@/assets/medinvoice-logo.png";
 import { 
   LayoutDashboard, 
   Users, 
@@ -64,15 +65,18 @@ export function AppSidebar() {
         <div className="flex items-center justify-center h-16 border-b border-border bg-primary/5">
           {!collapsed ? (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">ψ</span>
-              </div>
-              <span className="font-semibold text-foreground">MedInvoice</span>
+              <img 
+                src={medInvoiceLogo} 
+                alt="MedInvoice Logo" 
+                className="h-8 w-auto"
+              />
             </div>
           ) : (
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">ψ</span>
-            </div>
+            <img 
+              src={medInvoiceLogo} 
+              alt="MedInvoice Logo" 
+              className="h-8 w-auto"
+            />
           )}
         </div>
 
