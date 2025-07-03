@@ -40,10 +40,10 @@ export function DiarioClinico() {
   
   const { pazienti } = usePazienti();
 
-  // Filtra sedute per paziente selezionato
+  // Mostra sedute solo se è selezionato un paziente
   const seduteVisualizzate = selectedPaziente 
     ? getSeduteByPaziente(selectedPaziente)
-    : sedute;
+    : [];
 
   const pazienteSelezionato = pazienti.find(p => p.id === selectedPaziente);
 
@@ -108,27 +108,16 @@ export function DiarioClinico() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Ricerca Testuale */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Cerca per parole chiave</label>
-              <Input
-                placeholder="Cerca in titoli e note..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Filtro Paziente */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Filtra per paziente</label>
+              <label className="text-sm font-medium">Seleziona paziente</label>
               <select
                 value={selectedPaziente}
                 onChange={(e) => setSelectedPaziente(e.target.value)}
                 className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
               >
-                <option value="">Tutti i pazienti</option>
+                <option value="">Seleziona un paziente...</option>
                 {pazienti.map((paziente) => (
                   <option key={paziente.id} value={paziente.id}>
                     {paziente.nome} {paziente.cognome}
@@ -187,9 +176,7 @@ export function DiarioClinico() {
               <p className="text-muted-foreground mb-4">
                 {selectedPaziente 
                   ? "Nessuna seduta trovata per questo paziente"
-                  : searchTerm 
-                    ? "Nessuna seduta corrisponde ai criteri di ricerca"
-                    : "Inizia aggiungendo la prima seduta al diario clinico"
+                  : "Seleziona un paziente per visualizzare le sedute del diario clinico"
                 }
               </p>
               <SedutaForm 

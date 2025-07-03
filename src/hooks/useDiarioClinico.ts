@@ -44,7 +44,7 @@ const decrypt = (encryptedText: string): string => {
 export function useDiarioClinico() {
   const [sedute, setSedute] = useState<SedutaDettagliata[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); // Non utilizzato più
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -67,9 +67,6 @@ export function useDiarioClinico() {
         query = query.eq('paziente_id', pazienteId);
       }
 
-      if (searchTerm) {
-        query = query.or(`titolo.ilike.%${searchTerm}%,note_criptate.ilike.%${searchTerm}%`);
-      }
 
       const { data, error } = await query;
 
