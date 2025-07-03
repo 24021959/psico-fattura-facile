@@ -58,23 +58,29 @@ export class FatturaPDFGenerator {
   async generateFattura(fattura: FatturaData, professionista: ProfessionistaData): Promise<Blob> {
     this.doc = new jsPDF();
     
-    // Header
-    this.addHeader(professionista);
+    // Header con posizione dinamica
+    let currentY = this.addHeader(professionista);
     
-    // Fattura Info
+    // Fattura Info allineata in alto a destra
     this.addFatturaInfo(fattura);
     
-    // Destinatario
-    this.addDestinatario(fattura.paziente);
+    // Spazio prima del destinatario
+    currentY = Math.max(currentY, 80);
     
-    // Dettagli Prestazione
-    this.addDettagliPrestazione(fattura);
+    // Destinatario con posizione dinamica
+    currentY = this.addDestinatario(fattura.paziente, currentY);
     
-    // Totali
-    this.addTotali(fattura);
+    // Spazio prima dei dettagli
+    currentY += 30;
     
-    // Note Legali
-    this.addNoteLegali();
+    // Dettagli Prestazione con posizione dinamica
+    currentY = this.addDettagliPrestazione(fattura, currentY);
+    
+    // Totali con posizione dinamica
+    currentY = this.addTotali(fattura, currentY);
+    
+    // Note Legali con posizione dinamica
+    currentY = this.addNoteLegali(currentY);
     
     // Footer
     this.addFooter(professionista);
@@ -82,24 +88,15 @@ export class FatturaPDFGenerator {
     return this.doc.output('blob');
   }
 
-  private addHeader(professionista: ProfessionistaData) {
+  private addHeader(professionista: ProfessionistaData): number {
     let currentY = this.margin;
     
     // Logo o simbolo
-    if (professionista.logoUrl) {
-      // TODO: Aggiungere supporto per logo immagine
-      this.doc.setFillColor(0, 123, 255);
-      this.doc.rect(this.margin, currentY, 20, 20, 'F');
-      this.doc.setTextColor(255, 255, 255);
-      this.doc.setFontSize(16);
-      this.doc.text('ψ', this.margin + 7, currentY + 13);
-    } else {
-      this.doc.setFillColor(0, 123, 255);
-      this.doc.rect(this.margin, currentY, 20, 20, 'F');
-      this.doc.setTextColor(255, 255, 255);
-      this.doc.setFontSize(16);
-      this.doc.text('ψ', this.margin + 7, currentY + 13);
-    }
+    this.doc.setFillColor(0, 123, 255);
+    this.doc.rect(this.margin, currentY, 20, 20, 'F');
+    this.doc.setTextColor(255, 255, 255);
+    this.doc.setFontSize(16);
+    this.doc.text('ψ', this.margin + 7, currentY + 13);
 
     // Intestazione Professionista
     this.doc.setTextColor(0, 0, 0);
@@ -109,42 +106,39 @@ export class FatturaPDFGenerator {
     const titolo = professionista.titolo || 'Dott.ssa';
     this.doc.text(`${titolo} ${professionista.nome} ${professionista.cognome}`, this.margin + 30, currentY + 12);
     
-    currentY += 20;
+    currentY += 25;
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(`Psicologa - Psicoterapeuta`, this.margin + 30, currentY);
+    this.doc.text('Psicologa - Psicoterapeuta', this.margin + 30, currentY);
+    
+    currentY += 15;
+    this.doc.text(professionista.indirizzo, this.margin + 30, currentY);
     
     currentY += 10;
-    this.doc.text(`${professionista.indirizzo}`, this.margin + 30, currentY);
-    
-    currentY += 8;
     this.doc.text(`${professionista.cap} ${professionista.citta}`, this.margin + 30, currentY);
     
     if (professionista.telefono) {
-      currentY += 8;
+      currentY += 10;
       this.doc.text(`Tel: ${professionista.telefono}`, this.margin + 30, currentY);
     }
     
     if (professionista.email) {
-      currentY += 8;
+      currentY += 10;
       this.doc.text(`Email: ${professionista.email}`, this.margin + 30, currentY);
     }
     
-    if (professionista.pec) {
-      currentY += 8;
-      this.doc.text(`PEC: ${professionista.pec}`, this.margin + 30, currentY);
-    }
-    
-    currentY += 10;
+    currentY += 15;
     this.doc.text(`C.F.: ${professionista.codiceFiscale}`, this.margin + 30, currentY);
     
-    currentY += 8;
+    currentY += 10;
     this.doc.text(`P.IVA: ${professionista.partitaIva}`, this.margin + 30, currentY);
     
     if (professionista.ordineAlbo && professionista.numeroIscrizione) {
-      currentY += 8;
+      currentY += 10;
       this.doc.text(`${professionista.ordineAlbo} n° ${professionista.numeroIscrizione}`, this.margin + 30, currentY);
     }
+    
+    return currentY + 20;
   }
 
   private addFatturaInfo(fattura: FatturaData) {
@@ -160,9 +154,7 @@ export class FatturaPDFGenerator {
     this.doc.text(`Data: ${new Date(fattura.data).toLocaleDateString('it-IT')}`, rightX, this.margin + 45);
   }
 
-  private addDestinatario(paziente: any) {
-    const startY = this.margin + 130;
-    
+  private addDestinatario(paziente: any, startY: number): number {
     this.doc.setFontSize(12);
     this.doc.setFont('helvetica', 'bold');
     this.doc.text('FATTURA A:', this.margin, startY);
@@ -171,36 +163,36 @@ export class FatturaPDFGenerator {
     this.doc.setFont('helvetica', 'normal');
     this.doc.text(`${paziente.nome} ${paziente.cognome}`, this.margin, currentY);
     
-    currentY += 10;
+    currentY += 12;
     this.doc.text(`C.F.: ${paziente.codiceFiscale}`, this.margin, currentY);
     
     if (paziente.indirizzo) {
-      currentY += 10;
-      this.doc.text(`${paziente.indirizzo}`, this.margin, currentY);
+      currentY += 12;
+      this.doc.text(paziente.indirizzo, this.margin, currentY);
       if (paziente.cap && paziente.citta) {
-        currentY += 10;
+        currentY += 12;
         this.doc.text(`${paziente.cap} ${paziente.citta}`, this.margin, currentY);
       }
     }
+    
+    return currentY;
   }
 
-  private addDettagliPrestazione(fattura: FatturaData) {
-    const startY = this.margin + 200;
-    
+  private addDettagliPrestazione(fattura: FatturaData, startY: number): number {
     // Intestazione tabella
     this.doc.setFillColor(240, 240, 240);
-    this.doc.rect(this.margin, startY, this.pageWidth - 2 * this.margin, 12, 'F');
+    this.doc.rect(this.margin, startY, this.pageWidth - 2 * this.margin, 15, 'F');
     
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('DESCRIZIONE', this.margin + 5, startY + 8);
-    this.doc.text('CODICE', this.margin + 80, startY + 8);
-    this.doc.text('QTÀ', this.margin + 120, startY + 8);
-    this.doc.text('PREZZO', this.margin + 140, startY + 8);
-    this.doc.text('TOTALE', this.pageWidth - this.margin - 30, startY + 8);
+    this.doc.text('DESCRIZIONE', this.margin + 5, startY + 10);
+    this.doc.text('CODICE', this.margin + 80, startY + 10);
+    this.doc.text('QTÀ', this.margin + 120, startY + 10);
+    this.doc.text('PREZZO', this.margin + 140, startY + 10);
+    this.doc.text('TOTALE', this.pageWidth - this.margin - 30, startY + 10);
     
     // Riga prestazione con più spazio
-    let currentY = startY + 25;
+    let currentY = startY + 30;
     this.doc.setFont('helvetica', 'normal');
     this.doc.text(fattura.prestazione.nome, this.margin + 5, currentY);
     this.doc.text(fattura.prestazione.codice, this.margin + 80, currentY);
@@ -209,62 +201,58 @@ export class FatturaPDFGenerator {
     this.doc.text(`€ ${fattura.importo.toFixed(2)}`, this.pageWidth - this.margin - 30, currentY);
     
     // Linea di separazione con più spazio
-    currentY += 15;
+    currentY += 20;
     this.doc.line(this.margin, currentY, this.pageWidth - this.margin, currentY);
     
     // IVA e note con più spazio
-    currentY += 10;
+    currentY += 15;
     this.doc.setFontSize(9);
     this.doc.text('Prestazione sanitaria esente IVA', this.margin + 5, currentY);
-    currentY += 8;
+    currentY += 10;
     this.doc.text('(Art. 10 n. 18 DPR 633/72)', this.margin + 5, currentY);
+    
+    return currentY;
   }
 
-  private addTotali(fattura: FatturaData) {
-    const startY = this.margin + 280;
+  private addTotali(fattura: FatturaData, startY: number): number {
     const rightX = this.pageWidth - this.margin - 50;
     
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
     
-    let currentY = startY;
+    let currentY = startY + 20;
     
     // Subtotale
     this.doc.text('Subtotale:', rightX - 40, currentY);
     this.doc.text(`€ ${fattura.importo.toFixed(2)}`, rightX, currentY);
     
     // IVA
-    currentY += 12;
+    currentY += 15;
     this.doc.text('IVA (0%):', rightX - 40, currentY);
     this.doc.text('€ 0,00', rightX, currentY);
     
     // ENPAP
     if (fattura.enpap > 0) {
-      currentY += 12;
+      currentY += 15;
       this.doc.text('ENPAP (2%):', rightX - 40, currentY);
       this.doc.text(`€ ${fattura.enpap.toFixed(2)}`, rightX, currentY);
     }
     
     // Linea separatore
-    currentY += 15;
+    currentY += 20;
     this.doc.line(rightX - 50, currentY, rightX + 20, currentY);
     
-    // Totale
+    // Totale finale
     currentY += 15;
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(12);
     this.doc.text('TOTALE:', rightX - 40, currentY);
     this.doc.text(`€ ${fattura.totale.toFixed(2)}`, rightX, currentY);
     
-    // Metodo pagamento
-    currentY += 20;
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.setFontSize(10);
-    this.doc.text(`Pagamento: ${fattura.metodoPagamento}`, this.margin, currentY);
+    return currentY;
   }
-
-  private addNoteLegali() {
-    const startY = this.pageHeight - 80;
+  private addNoteLegali(startY: number): number {
+    let currentY = startY + 30;
     
     this.doc.setFontSize(8);
     this.doc.setFont('helvetica', 'normal');
@@ -272,19 +260,20 @@ export class FatturaPDFGenerator {
     const noteLegali = [
       'INFORMATIVA PRIVACY (Art. 13 Reg. UE 679/2016):',
       'I dati personali raccolti sono trattati per finalità di fatturazione e obblighi fiscali.',
-      'Il trattamento è necessario per l\'esecuzione del contratto e per adempimenti legali.',
+      "Il trattamento è necessario per l'esecuzione del contratto e per adempimenti legali.",
       'I dati saranno conservati per il tempo previsto dalla normativa fiscale (10 anni).',
       'Il paziente ha diritto di accesso, rettifica, cancellazione e portabilità dei dati.',
       '',
-      'Prestazione sanitaria ai sensi dell\'Art. 10 n. 18 DPR 633/72 - IVA non dovuta.',
+      "Prestazione sanitaria ai sensi dell'Art. 10 n. 18 DPR 633/72 - IVA non dovuta.",
       'Contributo ENPAP del 2% ai sensi della normativa previdenziale vigente.'
     ];
     
-    let currentY = startY;
     noteLegali.forEach(nota => {
       this.doc.text(nota, this.margin, currentY);
       currentY += 5;
     });
+    
+    return currentY;
   }
 
   private addFooter(professionista: ProfessionistaData) {
