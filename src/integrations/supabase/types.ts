@@ -163,12 +163,17 @@ export type Database = {
           cognome: string
           created_at: string
           email: string
+          enpap_a_paziente: boolean | null
+          iban: string | null
           id: string
           indirizzo: string | null
           logo_url: string | null
           nome: string
           numero_iscrizione_albo: string | null
           partita_iva: string | null
+          pec: string | null
+          percentuale_enpap: number | null
+          regime_fiscale: string | null
           telefono: string | null
           titolo: string | null
           updated_at: string
@@ -181,12 +186,17 @@ export type Database = {
           cognome: string
           created_at?: string
           email: string
+          enpap_a_paziente?: boolean | null
+          iban?: string | null
           id?: string
           indirizzo?: string | null
           logo_url?: string | null
           nome: string
           numero_iscrizione_albo?: string | null
           partita_iva?: string | null
+          pec?: string | null
+          percentuale_enpap?: number | null
+          regime_fiscale?: string | null
           telefono?: string | null
           titolo?: string | null
           updated_at?: string
@@ -199,12 +209,17 @@ export type Database = {
           cognome?: string
           created_at?: string
           email?: string
+          enpap_a_paziente?: boolean | null
+          iban?: string | null
           id?: string
           indirizzo?: string | null
           logo_url?: string | null
           nome?: string
           numero_iscrizione_albo?: string | null
           partita_iva?: string | null
+          pec?: string | null
+          percentuale_enpap?: number | null
+          regime_fiscale?: string | null
           telefono?: string | null
           titolo?: string | null
           updated_at?: string

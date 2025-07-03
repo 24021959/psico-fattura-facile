@@ -19,6 +19,11 @@ interface ProfileFormData {
   cap?: string;
   numero_iscrizione_albo?: string;
   logo_url?: string;
+  regime_fiscale?: 'RF01' | 'RF19';
+  pec?: string;
+  iban?: string;
+  percentuale_enpap?: number;
+  enpap_a_paziente?: boolean;
 }
 
 export function useProfile() {
@@ -80,6 +85,11 @@ export function useProfile() {
           cap: profileData.cap || null,
           numero_iscrizione_albo: profileData.numero_iscrizione_albo || null,
           logo_url: profileData.logo_url || null,
+          regime_fiscale: profileData.regime_fiscale || 'RF19',
+          pec: profileData.pec || null,
+          iban: profileData.iban || null,
+          percentuale_enpap: profileData.percentuale_enpap || 2.00,
+          enpap_a_paziente: profileData.enpap_a_paziente ?? true,
         }, {
           onConflict: 'user_id'
         })

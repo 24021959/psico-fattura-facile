@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { calcolaComponentiFiscali, type FiscalData } from '@/utils/fiscalUtils';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Fattura = Tables<'fatture'>;

@@ -32,6 +32,11 @@ export default function Impostazioni() {
     cap: "",
     numero_iscrizione_albo: "",
     logo_url: "",
+    regime_fiscale: "RF19" as 'RF01' | 'RF19',
+    pec: "",
+    iban: "",
+    percentuale_enpap: 2.00,
+    enpap_a_paziente: true,
   });
 
   // State per titolo personalizzato
@@ -56,6 +61,11 @@ export default function Impostazioni() {
         cap: profile.cap || "",
         numero_iscrizione_albo: (profile as any).numero_iscrizione_albo || "",
         logo_url: (profile as any).logo_url || "",
+        regime_fiscale: (profile as any).regime_fiscale || "RF19",
+        pec: (profile as any).pec || "",
+        iban: (profile as any).iban || "",
+        percentuale_enpap: (profile as any).percentuale_enpap || 2.00,
+        enpap_a_paziente: (profile as any).enpap_a_paziente ?? true,
       });
     } else if (user) {
       // Se non c'è profilo ma c'è user, usa email da auth
@@ -419,16 +429,20 @@ export default function Impostazioni() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="regimeFiscale">Regime Fiscale</Label>
-                <Select defaultValue="RF19">
+                <Select value={formData.regime_fiscale} onValueChange={(value: 'RF01' | 'RF19') => setFormData(prev => ({ ...prev, regime_fiscale: value }))}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Seleziona regime fiscale" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="RF01">Ordinario</SelectItem>
-                    <SelectItem value="RF19">Regime forfettario</SelectItem>
-                    <SelectItem value="RF18">Altro</SelectItem>
+                    <SelectItem value="RF01">RF01 - Regime Ordinario</SelectItem>
+                    <SelectItem value="RF19">RF19 - Regime Forfettario</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  {formData.regime_fiscale === 'RF01' 
+                    ? 'Regime ordinario: IVA esente per prestazioni sanitarie'
+                    : 'Regime forfettario: senza applicazione IVA'}
+                </p>
               </div>
               
               <div className="space-y-2">
@@ -455,7 +469,13 @@ export default function Impostazioni() {
               
               <div className="space-y-2">
                 <Label htmlFor="percentualeCassa">Percentuale Cassa (%)</Label>
-                <Input id="percentualeCassa" type="number" defaultValue="2" step="0.1" />
+                <Input 
+                  id="percentualeCassa" 
+                  type="number" 
+                  value={formData.percentuale_enpap}
+                  onChange={(e) => setFormData(prev => ({ ...prev, percentuale_enpap: parseFloat(e.target.value) || 2.00 }))}
+                  step="0.1" 
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -465,7 +485,24 @@ export default function Impostazioni() {
                     Se disattivato, sarà a carico del professionista
                   </p>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={formData.enpap_a_paziente} 
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, enpap_a_paziente: checked }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="pec">Email PEC</Label>
+                <Input 
+                  id="pec" 
+                  type="email"
+                  value={formData.pec}
+                  onChange={(e) => handleInputChange('pec', e.target.value)}
+                  placeholder="la.tua@pec.it" 
+                />
+                <p className="text-xs text-muted-foreground">
+                  Email certificata per comunicazioni ufficiali
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -484,7 +521,12 @@ export default function Impostazioni() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="iban">IBAN</Label>
-                <Input id="iban" defaultValue="IT60 X123 4567 8901 2345 678901" />
+                <Input 
+                  id="iban" 
+                  value={formData.iban}
+                  onChange={(e) => handleInputChange('iban', e.target.value)}
+                  placeholder="IT60 X123 4567 8901 2345 678901" 
+                />
               </div>
               
               <div className="space-y-2">
