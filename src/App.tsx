@@ -16,6 +16,7 @@ import DiarioClinico from "./pages/DiarioClinico";
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ function AppRoutes() {
       } />
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={<Admin />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={user ? <NotFound /> : <Welcome />} />
     </Routes>
