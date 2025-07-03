@@ -10,6 +10,7 @@ import Pazienti from "./pages/Pazienti";
 import Prestazioni from "./pages/Prestazioni";
 import Fatture from "./pages/Fatture";
 import Statistiche from "./pages/Statistiche";
+import Calendario from "./pages/Calendario";
 import Impostazioni from "./pages/Impostazioni";
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
@@ -58,6 +59,11 @@ function AppRoutes() {
       <Route path="/statistiche" element={
         <ProtectedRoute>
           <Statistiche />
+        </ProtectedRoute>
+      } />
+      <Route path="/calendario" element={
+        <ProtectedRoute>
+          <Calendario />
         </ProtectedRoute>
       } />
       <Route path="/impostazioni" element={
