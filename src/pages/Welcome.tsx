@@ -416,6 +416,13 @@ export default function Welcome() {
               </p>
               <p className="text-gray-500 text-xs mt-1">
                 © 2024 MedInvoice. Tutti i diritti riservati.
+                <span className="mx-2">•</span>
+                <button 
+                  onClick={() => navigate('/admin')}
+                  className="text-gray-600 hover:text-gray-400 transition-colors"
+                >
+                  Admin
+                </button>
               </p>
             </div>
           </div>
