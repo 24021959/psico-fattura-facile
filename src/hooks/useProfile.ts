@@ -10,6 +10,7 @@ interface ProfileFormData {
   nome: string;
   cognome: string;
   email: string;
+  titolo?: string;
   codice_fiscale?: string;
   partita_iva?: string;
   telefono?: string;
@@ -70,6 +71,7 @@ export function useProfile() {
           nome: profileData.nome,
           cognome: profileData.cognome,
           email: profileData.email,
+          titolo: profileData.titolo || null,
           codice_fiscale: profileData.codice_fiscale || null,
           partita_iva: profileData.partita_iva || null,
           telefono: profileData.telefono || null,

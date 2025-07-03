@@ -23,6 +23,7 @@ export default function Impostazioni() {
     nome: "",
     cognome: "",
     email: "",
+    titolo: "",
     codice_fiscale: "",
     partita_iva: "",
     telefono: "",
@@ -43,6 +44,7 @@ export default function Impostazioni() {
         nome: profile.nome || "",
         cognome: profile.cognome || "",
         email: profile.email || "",
+        titolo: (profile as any).titolo || "",
         codice_fiscale: profile.codice_fiscale || "",
         partita_iva: profile.partita_iva || "",
         telefono: profile.telefono || "",
@@ -186,6 +188,29 @@ export default function Impostazioni() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="titolo">Titolo Professionale</Label>
+                <Select value={formData.titolo} onValueChange={(value) => handleInputChange('titolo', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona titolo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Dott.">Dott.</SelectItem>
+                    <SelectItem value="Dott.ssa">Dott.ssa</SelectItem>
+                    <SelectItem value="Prof.">Prof.</SelectItem>
+                    <SelectItem value="Prof.ssa">Prof.ssa</SelectItem>
+                    <SelectItem value="altro">Altro (personalizzato)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formData.titolo === 'altro' && (
+                  <Input 
+                    placeholder="Inserisci titolo personalizzato"
+                    value={formData.titolo === 'altro' ? '' : formData.titolo}
+                    onChange={(e) => handleInputChange('titolo', e.target.value)}
+                  />
+                )}
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="nome">Nome</Label>

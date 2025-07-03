@@ -170,6 +170,7 @@ export type Database = {
           numero_iscrizione_albo: string | null
           partita_iva: string | null
           telefono: string | null
+          titolo: string | null
           updated_at: string
           user_id: string
         }
@@ -187,6 +188,7 @@ export type Database = {
           numero_iscrizione_albo?: string | null
           partita_iva?: string | null
           telefono?: string | null
+          titolo?: string | null
           updated_at?: string
           user_id: string
         }
@@ -204,6 +206,7 @@ export type Database = {
           numero_iscrizione_albo?: string | null
           partita_iva?: string | null
           telefono?: string | null
+          titolo?: string | null
           updated_at?: string
           user_id?: string
         }

@@ -27,6 +27,7 @@ interface FatturaData {
 interface ProfessionistaData {
   nome: string;
   cognome: string;
+  titolo?: string;
   codiceFiscale: string;
   partitaIva: string;
   indirizzo: string;
@@ -82,40 +83,67 @@ export class FatturaPDFGenerator {
   }
 
   private addHeader(professionista: ProfessionistaData) {
-    // Logo placeholder (può essere sostituito con logo reale)
-    this.doc.setFillColor(0, 123, 255); // Primary blue
-    this.doc.rect(this.margin, this.margin, 20, 20, 'F');
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(16);
-    this.doc.text('ψ', this.margin + 7, this.margin + 13);
+    let currentY = this.margin;
+    
+    // Logo o simbolo
+    if (professionista.logoUrl) {
+      // TODO: Aggiungere supporto per logo immagine
+      this.doc.setFillColor(0, 123, 255);
+      this.doc.rect(this.margin, currentY, 20, 20, 'F');
+      this.doc.setTextColor(255, 255, 255);
+      this.doc.setFontSize(16);
+      this.doc.text('ψ', this.margin + 7, currentY + 13);
+    } else {
+      this.doc.setFillColor(0, 123, 255);
+      this.doc.rect(this.margin, currentY, 20, 20, 'F');
+      this.doc.setTextColor(255, 255, 255);
+      this.doc.setFontSize(16);
+      this.doc.text('ψ', this.margin + 7, currentY + 13);
+    }
 
     // Intestazione Professionista
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFontSize(16);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text(`Dott.ssa ${professionista.nome} ${professionista.cognome}`, this.margin + 30, this.margin + 10);
     
+    const titolo = professionista.titolo || 'Dott.ssa';
+    this.doc.text(`${titolo} ${professionista.nome} ${professionista.cognome}`, this.margin + 30, currentY + 12);
+    
+    currentY += 20;
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(`Psicologa - Psicoterapeuta`, this.margin + 30, this.margin + 18);
-    this.doc.text(`${professionista.indirizzo}`, this.margin + 30, this.margin + 26);
-    this.doc.text(`${professionista.cap} ${professionista.citta}`, this.margin + 30, this.margin + 34);
+    this.doc.text(`Psicologa - Psicoterapeuta`, this.margin + 30, currentY);
+    
+    currentY += 10;
+    this.doc.text(`${professionista.indirizzo}`, this.margin + 30, currentY);
+    
+    currentY += 8;
+    this.doc.text(`${professionista.cap} ${professionista.citta}`, this.margin + 30, currentY);
     
     if (professionista.telefono) {
-      this.doc.text(`Tel: ${professionista.telefono}`, this.margin + 30, this.margin + 42);
+      currentY += 8;
+      this.doc.text(`Tel: ${professionista.telefono}`, this.margin + 30, currentY);
     }
+    
     if (professionista.email) {
-      this.doc.text(`Email: ${professionista.email}`, this.margin + 30, this.margin + 50);
+      currentY += 8;
+      this.doc.text(`Email: ${professionista.email}`, this.margin + 30, currentY);
     }
+    
     if (professionista.pec) {
-      this.doc.text(`PEC: ${professionista.pec}`, this.margin + 30, this.margin + 58);
+      currentY += 8;
+      this.doc.text(`PEC: ${professionista.pec}`, this.margin + 30, currentY);
     }
     
-    this.doc.text(`C.F.: ${professionista.codiceFiscale}`, this.margin + 30, this.margin + 66);
-    this.doc.text(`P.IVA: ${professionista.partitaIva}`, this.margin + 30, this.margin + 74);
+    currentY += 10;
+    this.doc.text(`C.F.: ${professionista.codiceFiscale}`, this.margin + 30, currentY);
     
-    if (professionista.ordineAlbo) {
-      this.doc.text(`${professionista.ordineAlbo} n° ${professionista.numeroIscrizione}`, this.margin + 30, this.margin + 82);
+    currentY += 8;
+    this.doc.text(`P.IVA: ${professionista.partitaIva}`, this.margin + 30, currentY);
+    
+    if (professionista.ordineAlbo && professionista.numeroIscrizione) {
+      currentY += 8;
+      this.doc.text(`${professionista.ordineAlbo} n° ${professionista.numeroIscrizione}`, this.margin + 30, currentY);
     }
   }
 
@@ -133,90 +161,106 @@ export class FatturaPDFGenerator {
   }
 
   private addDestinatario(paziente: any) {
-    const startY = this.margin + 110;
+    const startY = this.margin + 130;
     
     this.doc.setFontSize(12);
     this.doc.setFont('helvetica', 'bold');
     this.doc.text('FATTURA A:', this.margin, startY);
     
+    let currentY = startY + 15;
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(`${paziente.nome} ${paziente.cognome}`, this.margin, startY + 15);
-    this.doc.text(`C.F.: ${paziente.codiceFiscale}`, this.margin, startY + 25);
+    this.doc.text(`${paziente.nome} ${paziente.cognome}`, this.margin, currentY);
+    
+    currentY += 10;
+    this.doc.text(`C.F.: ${paziente.codiceFiscale}`, this.margin, currentY);
     
     if (paziente.indirizzo) {
-      this.doc.text(`${paziente.indirizzo}`, this.margin, startY + 35);
+      currentY += 10;
+      this.doc.text(`${paziente.indirizzo}`, this.margin, currentY);
       if (paziente.cap && paziente.citta) {
-        this.doc.text(`${paziente.cap} ${paziente.citta}`, this.margin, startY + 45);
+        currentY += 10;
+        this.doc.text(`${paziente.cap} ${paziente.citta}`, this.margin, currentY);
       }
     }
   }
 
   private addDettagliPrestazione(fattura: FatturaData) {
-    const startY = this.margin + 180;
+    const startY = this.margin + 200;
     
     // Intestazione tabella
     this.doc.setFillColor(240, 240, 240);
-    this.doc.rect(this.margin, startY, this.pageWidth - 2 * this.margin, 10, 'F');
+    this.doc.rect(this.margin, startY, this.pageWidth - 2 * this.margin, 12, 'F');
     
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('DESCRIZIONE', this.margin + 5, startY + 7);
-    this.doc.text('CODICE', this.margin + 80, startY + 7);
-    this.doc.text('QTÀ', this.margin + 120, startY + 7);
-    this.doc.text('PREZZO', this.margin + 140, startY + 7);
-    this.doc.text('TOTALE', this.pageWidth - this.margin - 30, startY + 7);
+    this.doc.text('DESCRIZIONE', this.margin + 5, startY + 8);
+    this.doc.text('CODICE', this.margin + 80, startY + 8);
+    this.doc.text('QTÀ', this.margin + 120, startY + 8);
+    this.doc.text('PREZZO', this.margin + 140, startY + 8);
+    this.doc.text('TOTALE', this.pageWidth - this.margin - 30, startY + 8);
     
-    // Riga prestazione
+    // Riga prestazione con più spazio
+    let currentY = startY + 25;
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(fattura.prestazione.nome, this.margin + 5, startY + 20);
-    this.doc.text(fattura.prestazione.codice, this.margin + 80, startY + 20);
-    this.doc.text('1', this.margin + 120, startY + 20);
-    this.doc.text(`€ ${fattura.importo.toFixed(2)}`, this.margin + 140, startY + 20);
-    this.doc.text(`€ ${fattura.importo.toFixed(2)}`, this.pageWidth - this.margin - 30, startY + 20);
+    this.doc.text(fattura.prestazione.nome, this.margin + 5, currentY);
+    this.doc.text(fattura.prestazione.codice, this.margin + 80, currentY);
+    this.doc.text('1', this.margin + 120, currentY);
+    this.doc.text(`€ ${fattura.importo.toFixed(2)}`, this.margin + 140, currentY);
+    this.doc.text(`€ ${fattura.importo.toFixed(2)}`, this.pageWidth - this.margin - 30, currentY);
     
-    // Linea di separazione
-    this.doc.line(this.margin, startY + 25, this.pageWidth - this.margin, startY + 25);
+    // Linea di separazione con più spazio
+    currentY += 15;
+    this.doc.line(this.margin, currentY, this.pageWidth - this.margin, currentY);
     
-    // IVA e note
+    // IVA e note con più spazio
+    currentY += 10;
     this.doc.setFontSize(9);
-    this.doc.text('Prestazione sanitaria esente IVA', this.margin + 5, startY + 35);
-    this.doc.text('(Art. 10 n. 18 DPR 633/72)', this.margin + 5, startY + 43);
+    this.doc.text('Prestazione sanitaria esente IVA', this.margin + 5, currentY);
+    currentY += 8;
+    this.doc.text('(Art. 10 n. 18 DPR 633/72)', this.margin + 5, currentY);
   }
 
   private addTotali(fattura: FatturaData) {
-    const startY = this.margin + 240;
+    const startY = this.margin + 280;
     const rightX = this.pageWidth - this.margin - 50;
     
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
     
+    let currentY = startY;
+    
     // Subtotale
-    this.doc.text('Subtotale:', rightX - 40, startY);
-    this.doc.text(`€ ${fattura.importo.toFixed(2)}`, rightX, startY);
+    this.doc.text('Subtotale:', rightX - 40, currentY);
+    this.doc.text(`€ ${fattura.importo.toFixed(2)}`, rightX, currentY);
     
     // IVA
-    this.doc.text('IVA (0%):', rightX - 40, startY + 10);
-    this.doc.text('€ 0,00', rightX, startY + 10);
+    currentY += 12;
+    this.doc.text('IVA (0%):', rightX - 40, currentY);
+    this.doc.text('€ 0,00', rightX, currentY);
     
     // ENPAP
     if (fattura.enpap > 0) {
-      this.doc.text('ENPAP (2%):', rightX - 40, startY + 20);
-      this.doc.text(`€ ${fattura.enpap.toFixed(2)}`, rightX, startY + 20);
+      currentY += 12;
+      this.doc.text('ENPAP (2%):', rightX - 40, currentY);
+      this.doc.text(`€ ${fattura.enpap.toFixed(2)}`, rightX, currentY);
     }
     
     // Linea separatore
-    this.doc.line(rightX - 50, startY + 25, rightX + 20, startY + 25);
+    currentY += 15;
+    this.doc.line(rightX - 50, currentY, rightX + 20, currentY);
     
     // Totale
+    currentY += 15;
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(12);
-    this.doc.text('TOTALE:', rightX - 40, startY + 35);
-    this.doc.text(`€ ${fattura.totale.toFixed(2)}`, rightX, startY + 35);
+    this.doc.text('TOTALE:', rightX - 40, currentY);
+    this.doc.text(`€ ${fattura.totale.toFixed(2)}`, rightX, currentY);
     
     // Metodo pagamento
+    currentY += 20;
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10);
-    this.doc.text(`Pagamento: ${fattura.metodoPagamento}`, this.margin, startY + 50);
+    this.doc.text(`Pagamento: ${fattura.metodoPagamento}`, this.margin, currentY);
   }
 
   private addNoteLegali() {
@@ -262,6 +306,7 @@ export async function generaEScaricaPDF(fattura: FatturaData, professionistaData
   const professionista: ProfessionistaData = professionistaData || {
     nome: "Nome",
     cognome: "Cognome",
+    titolo: "Dott.ssa",
     codiceFiscale: "XXXXXX00X00X000X",
     partitaIva: "00000000000",
     indirizzo: "Via da configurare, 0",
@@ -295,6 +340,7 @@ export async function anteprimaPDF(fattura: FatturaData, professionistaData?: Pr
   const professionista: ProfessionistaData = professionistaData || {
     nome: "Nome",
     cognome: "Cognome",
+    titolo: "Dott.ssa",
     codiceFiscale: "XXXXXX00X00X000X",
     partitaIva: "00000000000",
     indirizzo: "Via da configurare, 0",
