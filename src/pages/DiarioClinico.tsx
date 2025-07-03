@@ -216,9 +216,14 @@ export function DiarioClinico() {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <SedutaForm 
+                        sedutaToEdit={seduta}
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
                       <Button 
                         variant="ghost" 
                         size="sm"

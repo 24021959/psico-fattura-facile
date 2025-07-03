@@ -16,20 +16,21 @@ interface SedutaFormProps {
   trigger?: React.ReactNode;
   pazientePreselezionato?: string;
   onSuccess?: () => void;
+  sedutaToEdit?: any;
 }
 
-export function SedutaForm({ trigger, pazientePreselezionato, onSuccess }: SedutaFormProps) {
+export function SedutaForm({ trigger, pazientePreselezionato, onSuccess, sedutaToEdit }: SedutaFormProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    paziente_id: pazientePreselezionato || "",
-    titolo: "",
-    note: "",
-    esercizio_assegnato: "",
-    data_seduta: new Date().toISOString().split('T')[0]
+    paziente_id: pazientePreselezionato || sedutaToEdit?.paziente_id || "",
+    titolo: sedutaToEdit?.titolo || "",
+    note: sedutaToEdit?.note_decriptate || "",
+    esercizio_assegnato: sedutaToEdit?.esercizio_assegnato || "",
+    data_seduta: sedutaToEdit?.data_seduta || new Date().toISOString().split('T')[0]
   });
 
   const { pazienti } = usePazienti();
-  const { createSeduta } = useDiarioClinico();
+  const { createSeduta, updateSeduta } = useDiarioClinico();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,29 +55,37 @@ export function SedutaForm({ trigger, pazientePreselezionato, onSuccess }: Sedut
     }
 
     try {
-      const result = await createSeduta(formData);
+      let result;
+      
+      if (sedutaToEdit) {
+        result = await updateSeduta(sedutaToEdit.id, formData);
+      } else {
+        result = await createSeduta(formData);
+      }
       
       if (result) {
         setOpen(false);
         onSuccess?.();
         
-        // Reset form
-        if (!pazientePreselezionato) {
-          setFormData({
-            paziente_id: "",
-            titolo: "",
-            note: "",
-            esercizio_assegnato: "",
-            data_seduta: new Date().toISOString().split('T')[0]
-          });
-        } else {
-          setFormData({
-            paziente_id: pazientePreselezionato,
-            titolo: "",
-            note: "",
-            esercizio_assegnato: "",
-            data_seduta: new Date().toISOString().split('T')[0]
-          });
+        // Reset form solo se non stiamo modificando
+        if (!sedutaToEdit) {
+          if (!pazientePreselezionato) {
+            setFormData({
+              paziente_id: "",
+              titolo: "",
+              note: "",
+              esercizio_assegnato: "",
+              data_seduta: new Date().toISOString().split('T')[0]
+            });
+          } else {
+            setFormData({
+              paziente_id: pazientePreselezionato,
+              titolo: "",
+              note: "",
+              esercizio_assegnato: "",
+              data_seduta: new Date().toISOString().split('T')[0]
+            });
+          }
         }
       }
     } catch (error) {
@@ -98,10 +107,10 @@ export function SedutaForm({ trigger, pazientePreselezionato, onSuccess }: Sedut
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            Nuova Seduta - Diario Clinico
+            {sedutaToEdit ? "Modifica Seduta" : "Nuova Seduta"} - Diario Clinico
           </DialogTitle>
           <DialogDescription>
-            Aggiungi una nuova seduta al diario clinico del paziente
+            {sedutaToEdit ? "Modifica la seduta del diario clinico" : "Aggiungi una nuova seduta al diario clinico del paziente"}
           </DialogDescription>
         </DialogHeader>
 
@@ -222,7 +231,7 @@ export function SedutaForm({ trigger, pazientePreselezionato, onSuccess }: Sedut
             </Button>
             <Button type="submit" className="medical-gradient text-primary-foreground">
               <Save className="mr-2 h-4 w-4" />
-              Salva Seduta
+              {sedutaToEdit ? "Aggiorna Seduta" : "Salva Seduta"}
             </Button>
           </div>
         </form>
