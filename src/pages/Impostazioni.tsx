@@ -34,6 +34,9 @@ export default function Impostazioni() {
     logo_url: "",
   });
 
+  // State per titolo personalizzato
+  const [titoloPersonalizzato, setTitoloPersonalizzato] = useState("");
+
   // State per upload logo
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
@@ -65,7 +68,13 @@ export default function Impostazioni() {
   };
 
   const handleSave = async () => {
-    const result = await updateProfile(formData);
+    // Se è selezionato "altro", usa il titolo personalizzato
+    const finalFormData = {
+      ...formData,
+      titolo: formData.titolo === 'altro' ? titoloPersonalizzato : formData.titolo
+    };
+    
+    const result = await updateProfile(finalFormData);
     if (result) {
       toast({
         title: "Profilo salvato",
@@ -205,8 +214,8 @@ export default function Impostazioni() {
                 {formData.titolo === 'altro' && (
                   <Input 
                     placeholder="Inserisci titolo personalizzato"
-                    value={formData.titolo === 'altro' ? '' : formData.titolo}
-                    onChange={(e) => handleInputChange('titolo', e.target.value)}
+                    value={titoloPersonalizzato}
+                    onChange={(e) => setTitoloPersonalizzato(e.target.value)}
                   />
                 )}
               </div>
