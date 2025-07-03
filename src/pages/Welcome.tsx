@@ -61,53 +61,54 @@ export default function Welcome() {
   const plans = [
     {
       id: "free",
-      name: "Free",
+      name: "FREE",
       price: "0",
       period: "€/mese",
-      description: "Per iniziare subito",
+      description: "Perfetto per iniziare",
       features: [
-        "5 fatture al mese",
-        "Watermark MedInvoice",
-        "PDF scaricabile",
+        "Max 5 fatture/mese",
+        "Fatture PDF a norma",
+        "Dashboard base",
         "Supporto email"
       ],
       popular: false,
-      cta: "Attiva Gratis",
+      cta: "Prova Gratis",
       highlight: false
     },
     {
-      id: "basic",
-      name: "Basic",
-      price: "9",
+      id: "standard",
+      name: "STANDARD",
+      price: "4,99",
       period: "€/mese",
-      description: "Per professionisti attivi",
+      description: "Il più scelto dai professionisti",
       features: [
         "Fatture illimitate",
-        "PDF e XML scaricabili",
-        "Senza watermark",
-        "Supporto prioritario",
-        "Backup automatico"
+        "Tutte le funzionalità fiscali",
+        "Archivio annuale",
+        "Supporto email",
+        "PDF e XML scaricabili"
       ],
       popular: true,
-      cta: "Scegli Basic",
+      cta: "Scegli Standard",
       highlight: true
     },
     {
       id: "pro",
-      name: "Pro",
-      price: "15",
+      name: "PRO",
+      price: "9,90",
       period: "€/mese",
-      description: "Funzionalità avanzate",
+      description: "Soluzione professionale completa",
       features: [
-        "Tutto del Basic",
-        "Logo personalizzato",
-        "Backup cloud multipli",
-        "Supporto telefonico",
-        "Analytics avanzate"
+        "Fatture illimitate",
+        "Diario paziente completo",
+        "Backup automatico",
+        "Assistenza prioritaria",
+        "Tutte le funzionalità fiscali"
       ],
       popular: false,
       cta: "Scegli Pro",
-      highlight: false
+      highlight: false,
+      badge: "Professionale"
     }
   ];
 
@@ -292,7 +293,16 @@ export default function Welcome() {
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-primary text-primary-foreground px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
-                      Più Popolare
+                      Più Scelto
+                    </Badge>
+                  </div>
+                )}
+                
+                {plan.badge && (
+                  <div className="absolute -top-3 right-4">
+                    <Badge className="bg-amber-500 text-white px-4 py-1">
+                      <Award className="h-3 w-3 mr-1" />
+                      {plan.badge}
                     </Badge>
                   </div>
                 )}

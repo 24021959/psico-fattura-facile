@@ -1,7 +1,8 @@
-import { Euro, Users, FileText, TrendingUp, Calendar, Clock, CheckCircle, Plus } from "lucide-react";
+import { Euro, Users, FileText, TrendingUp, Calendar, Clock, CheckCircle, Plus, Settings, Crown, Star } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { FatturaForm } from "@/components/forms/FatturaForm";
 import { useFatture } from "@/hooks/useFatture";
 import { usePazienti } from "@/hooks/usePazienti";
@@ -9,9 +10,126 @@ import { usePrestazioni } from "@/hooks/usePrestazioni";
 import { useSubscription } from "@/hooks/useSubscription";
 import { SubscriptionBanner } from "@/components/subscription/SubscriptionBanner";
 import { UpgradeModal } from "@/components/subscription/UpgradeModal";
+import { PricingSection } from "@/components/subscription/PricingSection";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+// Plan Status Card Component
+function PlanStatusCard() {
+  const [showChangePlan, setShowChangePlan] = useState(false);
+  const { 
+    userSubscription, 
+    currentUsage, 
+    getCurrentPlan,
+    getRemainingFatture,
+    createCustomerPortalSession 
+  } = useSubscription();
+
+  if (!userSubscription) return null;
+
+  const currentPlan = getCurrentPlan();
+  const remainingFatture = getRemainingFatture();
+  const isFreePlan = userSubscription.plan_name === 'FREE';
+
+  const getPlanIcon = () => {
+    if (userSubscription.plan_name === 'PRO') return <Crown className="h-5 w-5 text-amber-500" />;
+    if (userSubscription.plan_name === 'STANDARD') return <Star className="h-5 w-5 text-blue-500" />;
+    return <FileText className="h-5 w-5 text-muted-foreground" />;
+  };
+
+  const getPlanColor = () => {
+    if (userSubscription.plan_name === 'PRO') return 'from-amber-50 to-orange-50 border-amber-200';
+    if (userSubscription.plan_name === 'STANDARD') return 'from-blue-50 to-blue-50 border-blue-200';
+    return 'from-muted/20 to-muted/20 border-border';
+  };
+
+  return (
+    <>
+      <Card className={`bg-gradient-to-r ${getPlanColor()}`}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {getPlanIcon()}
+                <div>
+                  <h3 className="font-semibold text-lg">
+                    Piano {userSubscription.plan_name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {isFreePlan ? (
+                      `${currentUsage?.fatture_count || 0}/5 fatture questo mese • ${remainingFatture} rimaste`
+                    ) : (
+                      `${currentUsage?.fatture_count || 0} fatture questo mese • Fatture illimitate`
+                    )}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Badge variant={isFreePlan ? "secondary" : "default"}>
+                  {currentPlan?.price_monthly === 0 ? 'Gratuito' : `€${currentPlan?.price_monthly}/mese`}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {isFreePlan ? (
+                <Button
+                  onClick={() => setShowChangePlan(true)}
+                  className="medical-gradient text-primary-foreground"
+                >
+                  Aggiorna Piano
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={createCustomerPortalSession}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Gestisci Abbonamento
+                </Button>
+              )}
+              
+              <Button
+                variant="outline"
+                onClick={() => setShowChangePlan(true)}
+              >
+                Cambia Piano
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {showChangePlan && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Scegli il Piano Perfetto</CardTitle>
+            <CardDescription>
+              Confronta i nostri piani e trova quello più adatto alle tue esigenze
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PricingSection 
+              showTitle={false}
+              onPlanSelect={() => setShowChangePlan(false)}
+            />
+            <div className="mt-4 text-center">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowChangePlan(false)}
+              >
+                Chiudi
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </>
+  );
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,6 +157,9 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Subscription Banner */}
       <SubscriptionBanner />
+      
+      {/* Plan Status */}
+      <PlanStatusCard />
       
       {/* Page Header */}
       <div className="flex items-center justify-between">

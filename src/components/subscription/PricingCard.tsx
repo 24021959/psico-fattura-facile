@@ -20,16 +20,19 @@ export function PricingCard({ plan, isCurrentPlan, isPopular, onSelect, loading 
       features.push('Max 5 fatture/mese');
       features.push('Fatture PDF a norma');
       features.push('Dashboard base');
+      features.push('Supporto email');
     } else if (plan.name === 'STANDARD') {
       features.push('Fatture illimitate');
       features.push('Tutte le funzionalità fiscali');
       features.push('Archivio annuale');
       features.push('Supporto email');
+      features.push('PDF e XML scaricabili');
     } else if (plan.name === 'PRO') {
       features.push('Fatture illimitate');
       features.push('Diario paziente completo');
       features.push('Backup automatico');
       features.push('Assistenza prioritaria');
+      features.push('Tutte le funzionalità fiscali');
     }
     
     return features;
@@ -44,7 +47,7 @@ export function PricingCard({ plan, isCurrentPlan, isPopular, onSelect, loading 
   const getPlanDescription = () => {
     if (plan.name === 'FREE') return 'Perfetto per iniziare';
     if (plan.name === 'STANDARD') return 'Il più scelto dai professionisti';
-    if (plan.name === 'PRO') return 'Soluzione completa e professionale';
+    if (plan.name === 'PRO') return 'Soluzione professionale completa';
     return '';
   };
 
@@ -58,7 +61,13 @@ export function PricingCard({ plan, isCurrentPlan, isPopular, onSelect, loading 
     }`}>
       {isPopular && (
         <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white">
-          Più scelto
+          Più Scelto
+        </Badge>
+      )}
+      
+      {plan.name === 'PRO' && (
+        <Badge className="absolute -top-3 right-4 bg-amber-500 text-white">
+          Professionale
         </Badge>
       )}
       
