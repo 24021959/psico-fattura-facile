@@ -87,24 +87,22 @@ export class FatturaPDFGenerator {
   }
 
   private addHeaderCompleto(professionista: ProfessionistaData, fattura: FatturaData) {
-    // Logo area (top right)
-    const logoX = this.pageWidth - this.margin - 40;
-    const logoY = this.margin;
-    this.doc.setFillColor(240, 240, 240);
-    this.doc.rect(logoX, logoY, 40, 30, 'F');
+    // Document info (top left)
     this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(0, 123, 255); // Colore azzurro del sito
+    this.doc.text(`Documento ${fattura.numero}/${fattura.anno}`, this.margin, this.margin + 10);
     this.doc.setFont('helvetica', 'normal');
-    this.doc.setTextColor(128, 128, 128);
-    this.doc.text('Logo', logoX + 15, logoY + 18);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text(`Emesso il ${new Date(fattura.data).toLocaleDateString('it-IT')}`, this.margin, this.margin + 20);
     
-    // Mittente (top left)
+    // Mittente (left side)
     this.doc.setFontSize(9);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text('Mittente:', this.margin, this.margin + 15);
+    this.doc.text('Mittente:', this.margin, this.margin + 40);
     
     this.doc.setFont('helvetica', 'normal');
-    let y = this.margin + 25;
+    let y = this.margin + 50;
     
     const nomeCompleto = `${professionista.titolo || 'Dott.ssa'} ${professionista.nome} ${professionista.cognome}`.trim();
     this.doc.text(nomeCompleto, this.margin, y);
@@ -115,24 +113,35 @@ export class FatturaPDFGenerator {
       y += 6;
     }
     if (professionista.citta && professionista.cap) {
-      this.doc.text(`${professionista.cap}, ${professionista.citta} (MI)`, this.margin, y);
+      this.doc.text(`${professionista.cap}, ${professionista.citta}`, this.margin, y);
       y += 6;
     }
     if (professionista.codiceFiscale) {
-      this.doc.text(`BNCGRT60D05A606F`, this.margin, y);
+      this.doc.text(`${professionista.codiceFiscale}`, this.margin, y);
       y += 6;
     }
     if (professionista.telefono) {
       this.doc.text(`${professionista.telefono}`, this.margin, y);
     }
     
-    // Destinatario (right side)
+    // Logo area (top right above destinatario)
+    const logoX = this.pageWidth - this.margin - 40;
+    const logoY = this.margin + 10;
+    this.doc.setFillColor(240, 240, 240);
+    this.doc.rect(logoX, logoY, 40, 30, 'F');
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(128, 128, 128);
+    this.doc.text('Logo', logoX + 15, logoY + 18);
+    
+    // Destinatario (right side below logo)
     const destX = this.pageWidth - this.margin - 80;
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Destinatario:', destX, this.margin + 15);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text('Destinatario:', destX, this.margin + 50);
     
     this.doc.setFont('helvetica', 'normal');
-    let destY = this.margin + 25;
+    let destY = this.margin + 60;
     this.doc.text(`${fattura.paziente.nome} ${fattura.paziente.cognome}`, destX, destY);
     destY += 6;
     if (fattura.paziente.indirizzo) {
@@ -140,23 +149,18 @@ export class FatturaPDFGenerator {
       destY += 6;
     }
     if (fattura.paziente.citta && fattura.paziente.cap) {
-      this.doc.text(`${fattura.paziente.cap}, ${fattura.paziente.citta} (MI)`, destX, destY);
+      this.doc.text(`${fattura.paziente.cap}, ${fattura.paziente.citta}`, destX, destY);
       destY += 6;
     }
-    this.doc.text(`RSSGNR89M09F205Q/F205`, destX, destY);
-    
-    // Document info (bottom right)  
-    const docY = this.margin + 75;
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text(`Documento ${fattura.numero}/${fattura.anno}`, destX, docY);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.text(`Emesso il ${new Date(fattura.data).toLocaleDateString('it-IT')}`, destX, docY + 6);
+    if (fattura.paziente.codiceFiscale) {
+      this.doc.text(`${fattura.paziente.codiceFiscale}`, destX, destY);
+    }
   }
 
   // Rimosso addDestinatarioFattura perché ora integrato nell'header
 
   private addTabellaPrestazioniConformi(fattura: FatturaData, calcoli: any) {
-    const startY = this.margin + 120;
+    const startY = this.margin + 130;
     const tableWidth = this.pageWidth - 2 * this.margin;
     
     // Header tabella
@@ -181,14 +185,14 @@ export class FatturaPDFGenerator {
     let rowY = startY + 8;
     this.doc.setFont('helvetica', 'normal');
     
-    // Riga 1: Seduta psicoterapia individuale
+    // Riga prestazione principale (usa il nome della prestazione)
     this.doc.text('1', this.margin + 4, rowY + 6);
-    this.doc.text('Seduta psicoterapia individuale', this.margin + 17, rowY + 6);
+    this.doc.text(fattura.prestazione.nome, this.margin + 17, rowY + 6);
     this.doc.text(`${calcoli.imponibile.toFixed(2)} €`, this.margin + 122, rowY + 6);
     this.doc.rect(this.margin, rowY, tableWidth, 8);
     rowY += 8;
     
-    // Riga 2: Seduta conoscitiva (sempre 0,00)
+    // Riga seduta conoscitiva (sempre 0,00)
     this.doc.text('1', this.margin + 4, rowY + 6);
     this.doc.text('Seduta conoscitiva', this.margin + 17, rowY + 6);
     this.doc.text('0,00 €', this.margin + 122, rowY + 6);
@@ -203,6 +207,8 @@ export class FatturaPDFGenerator {
     rowY += 8;
     
     // Sezione descrizione
+    this.doc.setFillColor(240, 240, 240);
+    this.doc.rect(this.margin, rowY, tableWidth, 8, 'F');
     this.doc.setFont('helvetica', 'normal');
     this.doc.text('Descrizione', this.margin + 2, rowY + 6);
     this.doc.text('Importo', this.margin + 120, rowY + 6);
@@ -211,7 +217,8 @@ export class FatturaPDFGenerator {
     
     // Riga ENPAP
     if (calcoli.enpap > 0) {
-      this.doc.text(`ENPAP 2% su ${calcoli.imponibile.toFixed(2)} €`, this.margin + 2, rowY + 6);
+      const percentualeEnpap = calcoli.percentuale_enpap || 2;
+      this.doc.text(`ENPAP ${percentualeEnpap}% su ${calcoli.imponibile.toFixed(2)} €`, this.margin + 2, rowY + 6);
       this.doc.text(`${calcoli.enpap.toFixed(2)} €`, this.margin + 122, rowY + 6);
       this.doc.rect(this.margin, rowY, tableWidth, 8);
       rowY += 8;
