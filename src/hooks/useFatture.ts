@@ -293,6 +293,83 @@ export function useFatture() {
     }
   };
 
+  const duplicateFattura = async (fatturaId: string) => {
+    try {
+      // Recupera la fattura originale con tutti i dati
+      const { data: fatturaOriginale, error: fetchError } = await supabase
+        .from('fatture')
+        .select(`
+          *,
+          paziente:pazienti!fatture_paziente_id_fkey(*),
+          righe_fattura(*)
+        `)
+        .eq('id', fatturaId)
+        .eq('user_id', user?.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!fatturaOriginale) throw new Error('Fattura non trovata');
+
+      const numeroFattura = await generateNumeroFattura();
+      
+      // Crea la nuova fattura
+      const { data: nuovaFattura, error: createError } = await supabase
+        .from('fatture')
+        .insert({
+          user_id: user!.id,
+          paziente_id: fatturaOriginale.paziente_id,
+          numero_fattura: numeroFattura,
+          data_fattura: new Date().toISOString().split('T')[0],
+          data_scadenza: fatturaOriginale.data_scadenza,
+          stato: 'bozza',
+          subtotale: fatturaOriginale.subtotale,
+          iva_percentuale: fatturaOriginale.iva_percentuale,
+          iva_importo: fatturaOriginale.iva_importo,
+          totale: fatturaOriginale.totale,
+          note: fatturaOriginale.note
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+
+      // Duplica le righe fattura
+      if (fatturaOriginale.righe_fattura?.length > 0) {
+        const righeData = fatturaOriginale.righe_fattura.map(riga => ({
+          fattura_id: nuovaFattura.id,
+          prestazione_id: riga.prestazione_id,
+          descrizione: riga.descrizione,
+          quantita: riga.quantita,
+          prezzo_unitario: riga.prezzo_unitario,
+          totale: riga.totale
+        }));
+
+        const { error: righeError } = await supabase
+          .from('righe_fattura')
+          .insert(righeData);
+
+        if (righeError) throw righeError;
+      }
+
+      await fetchFatture();
+      
+      toast({
+        title: "Successo",
+        description: `Fattura duplicata: ${numeroFattura}`
+      });
+      
+      return nuovaFattura;
+    } catch (error) {
+      console.error('Error duplicating fattura:', error);
+      toast({
+        variant: "destructive",
+        title: "Errore",
+        description: "Errore nella duplicazione della fattura"
+      });
+      return null;
+    }
+  };
+
   const deleteFattura = async (id: string) => {
     try {
       const { error } = await supabase
@@ -348,6 +425,7 @@ export function useFatture() {
     searchTerm,
     setSearchTerm,
     createFattura,
+    duplicateFattura,
     updateStatoFattura,
     deleteFattura,
     refreshFatture: fetchFatture,

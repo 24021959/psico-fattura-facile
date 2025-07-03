@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Plus, Search, Download, Eye, Calendar, Euro, User, Loader2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { FileText, Plus, Search, Download, Eye, Calendar, Euro, User, Loader2, CheckCircle2, Clock, AlertCircle, Copy, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { FatturaForm } from "@/components/forms/FatturaForm";
@@ -11,7 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Fatture() {
-  const { fatture, loading, searchTerm, setSearchTerm, updateStatoFattura, deleteFattura, stats } = useFatture();
+  const { fatture, loading, searchTerm, setSearchTerm, updateStatoFattura, duplicateFattura, deleteFattura, stats } = useFatture();
   const { profile } = useProfile();
   
   // Funzione helper per convertire il profilo Supabase nel formato PDF
@@ -282,6 +282,14 @@ export default function Fatture() {
                       <Button 
                         variant="outline" 
                         size="sm"
+                        onClick={() => duplicateFattura(fattura.id)}
+                        title="Duplica fattura"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
                         onClick={() => {
                           console.log('Visualizza fattura clicked:', fattura);
                           // Usa anteprima per aprire in nuova tab invece di scaricare
@@ -377,12 +385,12 @@ export default function Fatture() {
                         <Download className="mr-1 h-3 w-3" />
                         PDF
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10">
-                            Elimina
-                          </Button>
-                        </AlertDialogTrigger>
+                       <AlertDialog>
+                         <AlertDialogTrigger asChild>
+                           <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10">
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Elimina Fattura</AlertDialogTitle>

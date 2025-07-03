@@ -41,11 +41,22 @@ export default function Dashboard() {
             Panoramica della tua attività professionale
           </p>
         </div>
-        <FatturaForm trigger={
-          <Button className="medical-gradient text-primary-foreground hover:opacity-90">
-            Nuova Fattura
+        <div className="flex gap-3">
+          <FatturaForm trigger={
+            <Button size="lg" className="medical-gradient text-primary-foreground hover:opacity-90">
+              <Plus className="mr-2 h-5 w-5" />
+              Nuova Fattura
+            </Button>
+          } />
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={() => navigate('/pazienti')}
+          >
+            <Users className="mr-2 h-5 w-5" />
+            Aggiungi Paziente
           </Button>
-        } />
+        </div>
       </div>
 
       {/* Stats Cards */}
