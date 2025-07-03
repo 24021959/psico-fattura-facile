@@ -20,6 +20,7 @@ interface PazienteFormProps {
 }
 
 export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
+  console.log('PazienteForm rendered with paziente:', paziente);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome: paziente?.nome || "",
@@ -92,7 +93,10 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      console.log('Dialog open state changing to:', newOpen);
+      setOpen(newOpen);
+    }}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="medical-gradient text-primary-foreground hover:opacity-90">
