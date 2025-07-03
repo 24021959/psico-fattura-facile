@@ -6,9 +6,10 @@ import type { CalendarEvent } from "@/types/calendar";
 
 interface UpcomingEventsCardProps {
   events: CalendarEvent[];
+  pazienti?: Array<{ id: string; nome: string; cognome: string; }>;
 }
 
-export function UpcomingEventsCard({ events }: UpcomingEventsCardProps) {
+export function UpcomingEventsCard({ events, pazienti = [] }: UpcomingEventsCardProps) {
   const getEventTypeColor = (type: string) => {
     switch (type) {
       case 'appuntamento': return 'bg-primary';
@@ -25,6 +26,12 @@ export function UpcomingEventsCard({ events }: UpcomingEventsCardProps) {
       case 'annullato': return <AlertCircle className="h-4 w-4 text-muted-foreground" />;
       default: return <Clock className="h-4 w-4 text-primary" />;
     }
+  };
+
+  const getPazienteNome = (patientId: string | undefined) => {
+    if (!patientId) return null;
+    const paziente = pazienti.find(p => p.id === patientId);
+    return paziente ? `${paziente.nome} ${paziente.cognome}` : null;
   };
 
   return (
@@ -45,18 +52,22 @@ export function UpcomingEventsCard({ events }: UpcomingEventsCardProps) {
               Nessun evento programmato nei prossimi giorni
             </p>
           ) : (
-            events.slice(0, 5).map(event => (
-              <div key={event.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                <div className={`w-3 h-3 rounded-full ${getEventTypeColor(event.type)}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{event.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(event.date, 'dd MMM', { locale: it })} alle {event.time}
-                  </p>
+            events.slice(0, 5).map(event => {
+              const pazienteNome = getPazienteNome(event.patientId);
+              return (
+                <div key={event.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                  <div className={`w-3 h-3 rounded-full ${getEventTypeColor(event.type)}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{event.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(event.date, 'dd MMM', { locale: it })} alle {event.time}
+                      {pazienteNome && <span> • {pazienteNome}</span>}
+                    </p>
+                  </div>
+                  {getStatusIcon(event.status)}
                 </div>
-                {getStatusIcon(event.status)}
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>

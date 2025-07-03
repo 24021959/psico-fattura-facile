@@ -93,10 +93,14 @@ export default function Calendario() {
           <CalendarGrid
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
+            onDateClick={(date) => {
+              setSelectedDate(date);
+              setIsDialogOpen(true);
+            }}
             events={allEvents}
           />
           
-          <UpcomingEventsCard events={urgentEvents} />
+          <UpcomingEventsCard events={urgentEvents} pazienti={pazienti} />
         </div>
 
         <DayEventsCard

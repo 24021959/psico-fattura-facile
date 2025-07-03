@@ -8,11 +8,19 @@ import type { CalendarEvent } from "@/types/calendar";
 interface CalendarGridProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
+  onDateClick: (date: Date) => void;
   events: CalendarEvent[];
 }
 
-export function CalendarGrid({ selectedDate, onSelectDate, events }: CalendarGridProps) {
+export function CalendarGrid({ selectedDate, onSelectDate, onDateClick, events }: CalendarGridProps) {
   const daysWithEvents = events.map(event => event.date);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      onSelectDate(date);
+      onDateClick(date);
+    }
+  };
 
   return (
     <Card className="lg:col-span-2">
@@ -22,14 +30,14 @@ export function CalendarGrid({ selectedDate, onSelectDate, events }: CalendarGri
           {format(selectedDate, 'MMMM yyyy', { locale: it })}
         </CardTitle>
         <CardDescription>
-          Clicca su una data per visualizzare o aggiungere eventi
+          Clicca su una data per visualizzare eventi e aggiungerne di nuovi
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Calendar
           mode="single"
           selected={selectedDate}
-          onSelect={(date) => date && onSelectDate(date)}
+          onSelect={handleDateSelect}
           className="rounded-md border w-full"
           modifiers={{
             hasEvent: daysWithEvents
