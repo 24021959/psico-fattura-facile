@@ -9,11 +9,12 @@ import { usePrestazioni } from "@/hooks/usePrestazioni";
 import { useEventiCalendario } from "@/hooks/useEventiCalendario";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useToast } from "@/hooks/use-toast";
-import type { NewEventForm } from "@/types/calendar";
+import type { NewEventForm, CalendarEvent } from "@/types/calendar";
 
 export default function Calendario() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [newEvent, setNewEvent] = useState<NewEventForm>({
     title: '',
     time: '',
@@ -25,7 +26,7 @@ export default function Calendario() {
 
   const { pazienti } = usePazienti();
   const { prestazioni } = usePrestazioni();
-  const { createEvento, deleteEvento } = useEventiCalendario();
+  const { createEvento, deleteEvento, updateEvento } = useEventiCalendario();
   const { allEvents, getSelectedDayEvents, getUrgentEvents } = useCalendarEvents();
   const { toast } = useToast();
 
@@ -62,6 +63,67 @@ export default function Calendario() {
     }
   };
 
+  const handleEditEvent = (event: CalendarEvent) => {
+    setEditingEvent(event);
+    setNewEvent({
+      title: event.title,
+      time: event.time,
+      type: event.type,
+      description: event.description || '',
+      patientId: event.patientId || '',
+      serviceId: event.serviceId || ''
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleUpdateEvent = async () => {
+    if (!editingEvent || !newEvent.title || !newEvent.time) {
+      toast({
+        title: "Errore",
+        description: "Inserisci almeno titolo e orario",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const success = await updateEvento(editingEvent.id, {
+      titolo: newEvent.title,
+      orario: newEvent.time,
+      tipo: newEvent.type,
+      descrizione: newEvent.description || undefined,
+      paziente_id: newEvent.patientId || undefined,
+      prestazione_id: newEvent.serviceId || undefined
+    });
+
+    if (success) {
+      setNewEvent({
+        title: '',
+        time: '',
+        type: 'appuntamento',
+        description: '',
+        patientId: '',
+        serviceId: ''
+      });
+      setEditingEvent(null);
+      setIsDialogOpen(false);
+    }
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setEditingEvent(null);
+      setNewEvent({
+        title: '',
+        time: '',
+        type: 'appuntamento',
+        description: '',
+        patientId: '',
+        serviceId: ''
+      });
+    }
+  };
+
   const selectedDayEvents = getSelectedDayEvents(selectedDate);
   const urgentEvents = getUrgentEvents();
 
@@ -79,13 +141,14 @@ export default function Calendario() {
           
           <EventDialog
             isOpen={isDialogOpen}
-            onOpenChange={setIsDialogOpen}
+            onOpenChange={handleDialogChange}
             selectedDate={selectedDate}
             newEvent={newEvent}
             setNewEvent={setNewEvent}
-            onAddEvent={handleAddEvent}
+            onAddEvent={editingEvent ? handleUpdateEvent : handleAddEvent}
             pazienti={pazienti}
             prestazioni={prestazioni}
+            isEditing={!!editingEvent}
           />
         </div>
 
@@ -109,6 +172,7 @@ export default function Calendario() {
           pazienti={pazienti}
           onAddEvent={() => setIsDialogOpen(true)}
           onDeleteEvent={deleteEvento}
+          onEditEvent={handleEditEvent}
         />
       </div>
     </DashboardLayout>

@@ -23,6 +23,7 @@ interface DayEventsCardProps {
   pazienti?: Tables<'pazienti'>[];
   onAddEvent: () => void;
   onDeleteEvent: (id: string) => void;
+  onEditEvent?: (event: CalendarEvent) => void;
 }
 
 export function DayEventsCard({ 
@@ -30,7 +31,8 @@ export function DayEventsCard({
   events, 
   pazienti, 
   onAddEvent, 
-  onDeleteEvent 
+  onDeleteEvent,
+  onEditEvent
 }: DayEventsCardProps) {
   const getEventTypeColor = (type: string) => {
     switch (type) {
@@ -118,7 +120,11 @@ export function DayEventsCard({
                     {getStatusIcon(event.status)}
                     {event.type !== 'scadenza' && !event.invoiceId && (
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => onEditEvent?.(event)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button 

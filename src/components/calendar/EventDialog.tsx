@@ -19,6 +19,7 @@ interface EventDialogProps {
   onAddEvent: () => void;
   pazienti?: Tables<'pazienti'>[];
   prestazioni?: Tables<'prestazioni'>[];
+  isEditing?: boolean;
 }
 
 export function EventDialog({
@@ -29,7 +30,8 @@ export function EventDialog({
   setNewEvent,
   onAddEvent,
   pazienti,
-  prestazioni
+  prestazioni,
+  isEditing = false
 }: EventDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -41,9 +43,9 @@ export function EventDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nuovo Evento</DialogTitle>
+          <DialogTitle>{isEditing ? 'Modifica Evento' : 'Nuovo Evento'}</DialogTitle>
           <DialogDescription>
-            Aggiungi un nuovo evento per {format(selectedDate, 'dd MMMM yyyy', { locale: it })}
+            {isEditing ? 'Modifica l\'evento selezionato' : `Aggiungi un nuovo evento per ${format(selectedDate, 'dd MMMM yyyy', { locale: it })}`}
           </DialogDescription>
         </DialogHeader>
         
@@ -152,7 +154,7 @@ export function EventDialog({
               Annulla
             </Button>
             <Button onClick={onAddEvent} className="flex-1">
-              Aggiungi Evento
+              {isEditing ? 'Aggiorna Evento' : 'Aggiungi Evento'}
             </Button>
           </div>
         </div>
