@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminActivityLogger } from '@/hooks/useAdminActivityLogger';
 import { Search, UserCog, Mail, Calendar, CreditCard } from 'lucide-react';
 
 interface AdminUsersProps {
@@ -29,10 +30,16 @@ export function AdminUsers({ userRole }: AdminUsersProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { logActivity } = useAdminActivityLogger();
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+    // Log the admin viewing users
+    logActivity({
+      action: 'view_users_list',
+      target_type: 'admin_dashboard'
+    });
+  }, [logActivity]);
 
   const fetchUsers = async () => {
     try {
@@ -188,7 +195,17 @@ export function AdminUsers({ userRole }: AdminUsersProps) {
               </Select>
             </div>
             <div className="flex items-end">
-              <Button onClick={fetchUsers} variant="outline" className="w-full">
+              <Button 
+                onClick={() => {
+                  fetchUsers();
+                  logActivity({
+                    action: 'refresh_users_list',
+                    target_type: 'admin_dashboard'
+                  });
+                }} 
+                variant="outline" 
+                className="w-full"
+              >
                 Aggiorna
               </Button>
             </div>
