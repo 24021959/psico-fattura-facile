@@ -63,7 +63,7 @@ export default function Login() {
       }
     } else {
       // Login successful - redirect to dashboard
-      navigate("/dashboard");
+      navigate("/");
     }
   };
   const handleRegister = async (e: React.FormEvent) => {
