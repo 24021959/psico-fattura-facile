@@ -179,6 +179,48 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          html_template: string
+          id: string
+          is_active: boolean
+          name: string
+          subject_template: string
+          text_template: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          html_template: string
+          id?: string
+          is_active?: boolean
+          name: string
+          subject_template: string
+          text_template: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          html_template?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          subject_template?: string
+          text_template?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       eventi_calendario: {
         Row: {
           created_at: string
@@ -306,6 +348,99 @@ export type Database = {
           fatture_count?: number | null
           id?: string
           month_year?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_settings: {
+        Row: {
+          created_at: string
+          email_invoices: boolean
+          email_marketing: boolean
+          email_reminders: boolean
+          email_system_updates: boolean
+          id: string
+          reminder_days_before: number
+          sms_reminders: boolean
+          system_notifications: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_invoices?: boolean
+          email_marketing?: boolean
+          email_reminders?: boolean
+          email_system_updates?: boolean
+          id?: string
+          reminder_days_before?: number
+          sms_reminders?: boolean
+          system_notifications?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_invoices?: boolean
+          email_marketing?: boolean
+          email_reminders?: boolean
+          email_system_updates?: boolean
+          id?: string
+          reminder_days_before?: number
+          sms_reminders?: boolean
+          system_notifications?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          priority: string
+          read_at: string | null
+          recipient: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          template_used: string | null
+          type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          read_at?: string | null
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_used?: string | null
+          type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          read_at?: string | null
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_used?: string | null
+          type?: string
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []

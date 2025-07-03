@@ -12,7 +12,8 @@ import {
   LogOut,
   Activity,
   Home,
-  BadgePercent
+  BadgePercent,
+  Bell
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -78,6 +79,12 @@ export function AdminSidebar({ activeSection, onSectionChange, userRole }: Admin
       label: 'Sistema',
       icon: Settings,
       roles: ['super_admin']
+    },
+    {
+      id: 'notifications',
+      label: 'Notifiche',
+      icon: Bell,
+      roles: ['super_admin', 'admin', 'marketing']
     },
     {
       id: 'audit',

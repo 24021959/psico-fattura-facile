@@ -10,6 +10,7 @@ import { AdminSettings } from './AdminSettings';
 import { AdminAuditLog } from './AdminAuditLog';
 import { AdminDiscountCodes } from './AdminDiscountCodes';
 import { AdminSystemSettings } from './AdminSystemSettings';
+import { AdminNotifications } from './AdminNotifications';
 
 interface AdminDashboardProps {
   userRole: string | null;
@@ -38,6 +39,8 @@ export function AdminDashboard({ userRole }: AdminDashboardProps) {
         return <AdminDiscountCodes userRole={userRole} />;
       case 'system-settings':
         return <AdminSystemSettings userRole={userRole} />;
+      case 'notifications':
+        return <AdminNotifications userRole={userRole} />;
       case 'audit':
         return <AdminAuditLog userRole={userRole} />;
       default:
