@@ -5,6 +5,7 @@ import { FatturaForm } from "@/components/forms/FatturaForm";
 import { useFatture } from "@/hooks/useFatture";
 import { usePazienti } from "@/hooks/usePazienti";
 import { usePrestazioni } from "@/hooks/usePrestazioni";
+import { useProfile } from "@/hooks/useProfile";
 import { PlanStatusCard } from "@/components/dashboard/PlanStatusCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
@@ -23,6 +24,30 @@ export default function Dashboard() {
   const {
     prestazioni
   } = usePrestazioni();
+  const { profile } = useProfile();
+
+  // Funzione per determinare il genere dal nome
+  const getGenderFromName = (nome: string): 'M' | 'F' => {
+    const femaleNames = [
+      'alessandra', 'anna', 'barbara', 'carla', 'chiara', 'cristina', 'elena', 'francesca', 
+      'giulia', 'laura', 'maria', 'monica', 'paola', 'roberta', 'sara', 'silvia', 'valentina',
+      'federica', 'giovanna', 'lucia', 'emanuela', 'lorena', 'daniela', 'claudia', 'veronica',
+      'sabrina', 'antonella', 'patrizia', 'manuela', 'elisa', 'raffaella', 'teresa', 'grazia',
+      'caterina', 'elisabetta', 'rosa', 'angela', 'franca', 'rita', 'donatella', 'simona'
+    ];
+    return femaleNames.includes(nome.toLowerCase()) ? 'F' : 'M';
+  };
+
+  // Genera messaggio di benvenuto personalizzato
+  const getWelcomeMessage = () => {
+    if (!profile?.nome) return "Benvenuto nella piattaforma creata su misura per i bisogni dei professionisti della psicologia";
+    
+    const gender = getGenderFromName(profile.nome);
+    const title = gender === 'F' ? 'Dottoressa' : 'Dottore';
+    const welcome = gender === 'F' ? 'Benvenuta' : 'Benvenuto';
+    
+    return `${welcome} ${title} ${profile.nome}`;
+  };
 
   // Calcoli per statistiche aggiornate
   const currentMonth = new Date().getMonth();
@@ -42,7 +67,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">
-            Benvenuto nella piattaforma creata su misura per i bisogni dei professionisti della psicologia
+            {getWelcomeMessage()}
           </p>
         </div>
         <div className="flex gap-3">
