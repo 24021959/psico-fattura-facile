@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, Eye, EyeOff, Heart, Mail } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+
 export default function Login() {
   const {
     login,
@@ -15,6 +17,7 @@ export default function Login() {
     resetPassword,
     isLoading
   } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const {
@@ -54,6 +57,9 @@ export default function Login() {
       } else {
         setError(result.error || "Errore durante l'accesso");
       }
+    } else {
+      // Login successful - redirect to dashboard
+      navigate("/dashboard");
     }
   };
   const handleRegister = async (e: React.FormEvent) => {
