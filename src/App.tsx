@@ -36,7 +36,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={
+      <Route path="/" element={user ? <Index /> : <Welcome />} />
+      <Route path="/dashboard" element={
         <ProtectedRoute>
           <Index />
         </ProtectedRoute>
@@ -74,7 +75,7 @@ function AppRoutes() {
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/login" element={<Login />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={user ? <NotFound /> : <Login />} />
+      <Route path="*" element={user ? <NotFound /> : <Welcome />} />
     </Routes>
   );
 }
