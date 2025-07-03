@@ -15,9 +15,11 @@ export function DiaryUpgradeModal({ open, onOpenChange }: DiaryUpgradeModalProps
   const paidPlans = plans.filter(plan => plan.name !== 'FREE');
 
   const handleSelectPlan = async (planName: string) => {
-    const plan = plans.find(p => p.name === planName);
-    if (plan?.stripe_price_id) {
-      await createCheckoutSession(plan.stripe_price_id);
+    try {
+      console.log('Tentativo di creare checkout per piano:', planName);
+      await createCheckoutSession(planName);
+    } catch (error) {
+      console.error('Errore durante la creazione della sessione di checkout:', error);
     }
   };
 
