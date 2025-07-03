@@ -166,7 +166,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">
-            Panoramica della tua attività professionale
+            Benvenuto nella piattaforma creata su misura per i bisogni dei professionisti della psicologia
           </p>
         </div>
         <div className="flex gap-3">
@@ -288,7 +288,7 @@ export default function Dashboard() {
               onClick={() => navigate('/pazienti')}
             >
               <Users className="mr-2 h-5 w-5" />
-              Aggiungi Paziente
+              Inserisci Nuovo Paziente
             </Button>
             <Button 
               variant="outline" 
@@ -297,7 +297,7 @@ export default function Dashboard() {
               onClick={() => navigate('/prestazioni')}
             >
               <Calendar className="mr-2 h-5 w-5" />
-              Gestisci Prestazioni
+              Gestisci Sedute Terapeutiche
             </Button>
             <Button 
               variant="outline" 

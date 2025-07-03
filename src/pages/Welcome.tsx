@@ -35,28 +35,31 @@ export default function Welcome() {
   const benefits = [
     {
       icon: CheckCircle,
-      title: "Esenzione IVA e cassa ENPAP preimpostate",
-      description: "Tutti i calcoli fiscali automatici e conformi"
+      title: "Esente IVA con dicitura corretta",
+      description: "Regime forfettario o ordinario gestito automaticamente"
     },
     {
       icon: FileText,
-      title: "PDF e XML pronti da inviare",
-      description: "Fattura elettronica già formattata per SDI"
+      title: "Calcolo automatico del contributo ENPAP",
+      description: "2% ENPAP già preimpostato secondo normativa"
+    },
+    {
+      icon: Shield,
+      title: "Marca da bollo gestita automaticamente",
+      description: "Calcolo e applicazione secondo le soglie di legge"
+    },
+    {
+      icon: Brain,
+      title: "Diario terapeutico paziente (con backup)",
+      description: "Traccia il percorso terapeutico in sicurezza"
     },
     {
       icon: Zap,
-      title: "Nessun gestionale complicato",
-      description: "Interfaccia semplice, risultati immediati"
+      title: "Nessuna complicazione fiscale o tecnica",
+      description: "Tutto automatico, concentrati sui tuoi pazienti"
     }
   ];
 
-  const professionals = [
-    { name: "Psicologi", icon: Brain },
-    { name: "Logopedisti", icon: Speech },
-    { name: "Fisioterapisti", icon: Activity },
-    { name: "Dietisti", icon: Apple },
-    { name: "Terapisti TNPEE", icon: Stethoscope }
-  ];
 
   const plans = [
     {
@@ -137,21 +140,21 @@ export default function Welcome() {
 
   const testimonials = [
     {
-      text: "Finalmente una fattura sanitaria che non mi fa impazzire. In 3 clic ho tutto pronto!",
-      author: "Marta",
-      role: "Logopedista",
+      text: "Finalmente una piattaforma pensata per noi psicologi! In pochi secondi ho tutto pronto.",
+      author: "Dott.ssa G.B.",
+      role: "Psicologa Clinica",
       rating: 5
     },
     {
-      text: "Perfetto per noi psicologi. Calcola tutto automaticamente, risparmio ore di lavoro.",
-      author: "Dr. Rossi",
-      role: "Psicologo",
+      text: "Semplice, leggera e senza burocrazia. Proprio quello che mi serviva per concentrarmi sui pazienti.",
+      author: "Dott. M.T.",
+      role: "Psicoterapeuta",
       rating: 5
     },
     {
-      text: "Semplicissimo da usare. Non potrei più farne a meno per la mia attività.",
-      author: "Laura",
-      role: "Fisioterapista",
+      text: "Il diario terapeutico è perfetto per tenere traccia dei progressi. Non potrei più farne a meno.",
+      author: "Dott.ssa S.R.",
+      role: "Psicologa dell'Età Evolutiva",
       rating: 5
     }
   ];
@@ -181,13 +184,12 @@ export default function Welcome() {
       <section className="py-20 px-4 bg-gradient-to-br from-primary-light via-success-light to-card">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Fatture sanitarie.<br />
-            <span className="text-primary">In 3 clic.</span><br />
-            Nessuna complicazione.
+            La fatturazione<br />
+            <span className="text-primary">su misura per psicologi.</span>
           </h2>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
-            Crea e scarica fatture a norma per prestazioni sanitarie in pochi secondi. 
-            Senza agenda. Senza burocrazia.
+            Crea le tue fatture sanitarie a norma in meno di 1 minuto. 
+            Perfetto per psicologi e psicoterapeuti in regime forfettario o ordinario.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
             <Button 
@@ -195,7 +197,7 @@ export default function Welcome() {
               className="bg-primary hover:bg-primary-hover text-primary-foreground text-lg px-8 py-4"
               onClick={() => navigate('/login')}
             >
-              Attiva gratis – Nessuna carta richiesta
+              Provalo gratis – Genera fino a 5 fatture al mese
             </Button>
           </div>
           <div className="flex items-center gap-6 text-sm text-gray-500 justify-center">
@@ -211,12 +213,16 @@ export default function Welcome() {
         </div>
       </section>
 
-      {/* Benefici rapidi */}
+      {/* Vantaggi per psicologi */}
       <section className="py-16 px-4 bg-card">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Tutto quello che ti serve</h3>
+            <p className="text-gray-600">Specificamente progettato per le esigenze dei professionisti della psicologia</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {benefits.map((benefit, index) => (
-              <div key={index} className="text-center">
+              <div key={index} className="text-center p-6 border border-border rounded-lg hover:shadow-medical transition-all">
                 <div className="w-16 h-16 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-4">
                   <benefit.icon className="h-8 w-8 text-primary" />
                 </div>
@@ -231,50 +237,29 @@ export default function Welcome() {
       {/* Demo interattiva */}
       <section className="py-16 px-4 bg-gradient-to-r from-secondary to-therapy-light">
         <div className="container mx-auto max-w-4xl text-center">
-          <h3 className="text-3xl font-bold text-gray-900 mb-8">Guarda quanto è semplice</h3>
+          <h3 className="text-3xl font-bold text-gray-900 mb-8">Come funziona</h3>
           <div className="bg-card rounded-xl shadow-medical p-8 mb-8">
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-primary-foreground font-bold">1</div>
-                <h4 className="font-semibold mb-2">Clicca</h4>
-                <p className="text-sm text-gray-600">Scegli il paziente</p>
+                <h4 className="font-semibold mb-2">Inserisci i dati del paziente</h4>
+                <p className="text-sm text-gray-600">Aggiungi nome, cognome e dati fiscali</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-primary-foreground font-bold">2</div>
-                <h4 className="font-semibold mb-2">Seleziona</h4>
-                <p className="text-sm text-gray-600">La prestazione sanitaria</p>
+                <h4 className="font-semibold mb-2">Genera la fattura</h4>
+                <p className="text-sm text-gray-600">Con tutti gli obblighi fiscali automatici</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 text-primary-foreground font-bold">3</div>
-                <h4 className="font-semibold mb-2">Genera</h4>
-                <p className="text-sm text-gray-600">PDF e XML pronti</p>
+                <h4 className="font-semibold mb-2">Scarica il PDF</h4>
+                <p className="text-sm text-gray-600">Pronto da stampare e inviare</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Chi può usarla */}
-      <section className="py-16 px-4 bg-card">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Pensata per tutti i professionisti sanitari</h3>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Specializzata per le esigenze specifiche dei professionisti sanitari italiani
-            </p>
-          </div>
-          <div className="grid md:grid-cols-5 gap-6">
-            {professionals.map((prof, index) => (
-               <div key={index} className="text-center p-6 rounded-lg border border-border hover:shadow-medical hover:border-primary/20 transition-all">
-                <div className="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4">
-                  <prof.icon className="h-8 w-8 text-success" />
-                </div>
-                <h4 className="font-semibold text-gray-900">{prof.name}</h4>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Pricing */}
       <section className="py-16 px-4 bg-gradient-to-r from-psychology-light to-secondary">
