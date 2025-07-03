@@ -107,10 +107,10 @@ export function SedutaForm({ trigger, pazientePreselezionato, onSuccess, sedutaT
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            {sedutaToEdit ? "Modifica Seduta" : "Nuova Seduta"} - Diario Clinico
+            {sedutaToEdit ? "Modifica Seduta" : "Nuova Seduta"} - Diario Terapeutico
           </DialogTitle>
           <DialogDescription>
-            {sedutaToEdit ? "Modifica la seduta del diario clinico" : "Aggiungi una nuova seduta al diario clinico del paziente"}
+            {sedutaToEdit ? "Modifica la seduta del diario terapeutico" : "Aggiungi una nuova seduta al diario terapeutico del paziente"}
           </DialogDescription>
         </DialogHeader>
 

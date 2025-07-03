@@ -29,7 +29,7 @@ import {
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Pazienti", url: "/pazienti", icon: Users },
-  { title: "Diario Clinico", url: "/diario-clinico", icon: Notebook },
+  { title: "Diario Terapeutico", url: "/diario-clinico", icon: Notebook },
   { title: "Fatture", url: "/fatture", icon: FileText },
   { title: "Prestazioni", url: "/prestazioni", icon: Activity },
 ];
