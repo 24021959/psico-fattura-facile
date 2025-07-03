@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, User, Building, CreditCard, FileText, Download, Save } from "lucide-react";
+import { Settings, User, Building, CreditCard, FileText, Download, Save, Upload, Image } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Impostazioni() {
   const { toast } = useToast();
@@ -28,7 +29,12 @@ export default function Impostazioni() {
     indirizzo: "",
     citta: "",
     cap: "",
+    numero_iscrizione_albo: "",
+    logo_url: "",
   });
+
+  // State per upload logo
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Carica dati dal profilo quando disponibili
   useEffect(() => {
@@ -43,6 +49,8 @@ export default function Impostazioni() {
         indirizzo: profile.indirizzo || "",
         citta: profile.citta || "",
         cap: profile.cap || "",
+        numero_iscrizione_albo: (profile as any).numero_iscrizione_albo || "",
+        logo_url: (profile as any).logo_url || "",
       });
     } else if (user) {
       // Se non c'è profilo ma c'è user, usa email da auth
@@ -69,6 +77,69 @@ export default function Impostazioni() {
       title: "Test XML completato",
       description: "Il file XML è conforme alle specifiche SDI"
     });
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validazione file
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: "destructive",
+        title: "Errore",
+        description: "Seleziona un file immagine valido"
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB max
+      toast({
+        variant: "destructive", 
+        title: "Errore",
+        description: "L'immagine deve essere inferiore a 2MB"
+      });
+      return;
+    }
+
+    setIsUploadingLogo(true);
+
+    try {
+      // Upload file a Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/logo.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('user-logos')
+        .upload(fileName, file, { 
+          upsert: true // Sovrascrivi se esiste già
+        });
+
+      if (error) throw error;
+
+      // Ottieni URL pubblico
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-logos')
+        .getPublicUrl(fileName);
+
+      // Aggiorna formData con nuovo URL logo
+      setFormData(prev => ({ ...prev, logo_url: publicUrl }));
+
+      toast({
+        title: "Logo caricato",
+        description: "Il tuo logo è stato caricato con successo"
+      });
+
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast({
+        variant: "destructive",
+        title: "Errore",
+        description: "Errore durante il caricamento del logo"
+      });
+    } finally {
+      setIsUploadingLogo(false);
+    }
   };
 
   if (loading) {
@@ -225,6 +296,76 @@ export default function Impostazioni() {
               <div className="p-4 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">
                   <strong>Nota:</strong> I dati di indirizzo verranno utilizzati per la fatturazione elettronica e la corrispondenza ufficiale.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Albo e Logo */}
+          <Card className="shadow-medical">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="h-5 w-5 text-primary" />
+                Albo Professionale e Logo
+              </CardTitle>
+              <CardDescription>
+                Dati albo e logo per fatturazione
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="numeroIscrizione">Numero Iscrizione Albo</Label>
+                <Input 
+                  id="numeroIscrizione" 
+                  value={formData.numero_iscrizione_albo}
+                  onChange={(e) => handleInputChange('numero_iscrizione_albo', e.target.value)}
+                  placeholder="es. 12345" 
+                />
+                <p className="text-xs text-muted-foreground">
+                  Numero di iscrizione all'Ordine degli Psicologi
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="logo">Logo Professionale</Label>
+                <div className="flex items-center gap-4">
+                  {formData.logo_url && (
+                    <div className="w-16 h-16 border-2 border-border rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                      <img 
+                        src={formData.logo_url} 
+                        alt="Logo" 
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <Input
+                      id="logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      disabled={isUploadingLogo}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Formati supportati: JPG, PNG, SVG. Max 2MB
+                    </p>
+                  </div>
+                  {isUploadingLogo && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Upload className="h-4 w-4 animate-spin" />
+                      Caricamento...
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Nota:</strong> Il logo apparirà nell'intestazione delle fatture PDF. Usa un'immagine di qualità e su sfondo trasparente per il miglior risultato.
                 </p>
               </div>
             </CardContent>

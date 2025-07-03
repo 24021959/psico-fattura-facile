@@ -38,6 +38,7 @@ interface ProfessionistaData {
   iban?: string;
   ordineAlbo?: string;
   numeroIscrizione?: string;
+  logoUrl?: string;
 }
 
 export class FatturaPDFGenerator {

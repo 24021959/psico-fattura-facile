@@ -31,7 +31,8 @@ export default function Fatture() {
       pec: '', // Non abbiamo questo campo nel profilo
       iban: '', // Non abbiamo questo campo nel profilo
       ordineAlbo: 'Ordine Psicologi', // Valore generico
-      numeroIscrizione: 'N/A' // Non abbiamo questo campo nel profilo
+      numeroIscrizione: (profile as any).numero_iscrizione_albo || 'N/A',
+      logoUrl: (profile as any).logo_url || undefined
     };
   };
 
