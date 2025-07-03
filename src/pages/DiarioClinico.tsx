@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
@@ -24,6 +23,7 @@ import { usePazienti } from "@/hooks/usePazienti";
 import { SedutaForm } from "@/components/forms/SedutaForm";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { ProtectedDiary } from "@/components/subscription/ProtectedDiary";
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
@@ -67,225 +67,227 @@ export function DiarioClinico() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center gap-4">
-          <Link to="/dashboard">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Diario Clinico</h1>
-            <p className="text-muted-foreground">
-              Gestione confidenziale delle sedute e note cliniche dei pazienti
-            </p>
-          </div>
-        </div>
-
-        {/* Privacy Alert */}
-        <Alert className="border-green-200 bg-green-50">
-          <Shield className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <strong>Sicurezza Garantita:</strong> Tutti i dati sono criptati con standard AES-256. 
-            Accesso riservato esclusivamente al professionista autenticato. 
-            <span className="block mt-1 text-sm">
-              ⚠️ Uso privato - non sostituisce documentazione medica ufficiale
-            </span>
-          </AlertDescription>
-        </Alert>
-      </div>
-
-      {/* Filtri e Azioni */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Filtri e Ricerca
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Filtro Paziente */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Seleziona paziente</label>
-              <select
-                value={selectedPaziente}
-                onChange={(e) => setSelectedPaziente(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-              >
-                <option value="">Seleziona un paziente...</option>
-                {pazienti.map((paziente) => (
-                  <option key={paziente.id} value={paziente.id}>
-                    {paziente.nome} {paziente.cognome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Nuova Seduta */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Azioni</label>
-              <SedutaForm 
-                pazientePreselezionato={selectedPaziente || undefined}
-                trigger={
-                  <Button className="w-full medical-gradient text-primary-foreground">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nuova Seduta
-                  </Button>
-                }
-              />
-            </div>
-          </div>
-
-          {/* Info Paziente Selezionato */}
-          {pazienteSelezionato && (
-            <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-              <div className="flex items-center gap-2 mb-2">
-                <User className="h-4 w-4 text-primary" />
-                <span className="font-medium text-primary">
-                  {pazienteSelezionato.nome} {pazienteSelezionato.cognome}
-                </span>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {getSeduteByPaziente(selectedPaziente).length} sedute registrate
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Timeline Sedute */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Timeline Sedute
-            <Badge variant="secondary">{seduteVisualizzate.length}</Badge>
-          </h2>
-        </div>
-
-        {seduteVisualizzate.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nessuna seduta registrata</h3>
-              <p className="text-muted-foreground mb-4">
-                {selectedPaziente 
-                  ? "Nessuna seduta trovata per questo paziente"
-                  : "Seleziona un paziente per visualizzare le sedute del diario clinico"
-                }
+    <ProtectedDiary>
+      <DashboardLayout>
+        <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Diario Terapeutico</h1>
+              <p className="text-muted-foreground">
+                Gestione confidenziale delle sedute e note cliniche dei pazienti
               </p>
-              <SedutaForm 
-                pazientePreselezionato={selectedPaziente || undefined}
-                trigger={
-                  <Button className="medical-gradient text-primary-foreground">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Aggiungi Prima Seduta
-                  </Button>
-                }
-              />
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {seduteVisualizzate.map((seduta) => (
-              <Card key={seduta.id} className="overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        {seduta.titolo}
-                      </CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {format(new Date(seduta.data_seduta), "dd MMMM yyyy", { locale: it })}
-                        </span>
-                        {!selectedPaziente && seduta.paziente && (
+            </div>
+          </div>
+
+          {/* Privacy Alert */}
+          <Alert className="border-green-200 bg-green-50">
+            <Shield className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              <strong>Sicurezza Garantita:</strong> Tutti i dati sono criptati con standard AES-256. 
+              Accesso riservato esclusivamente al professionista autenticato. 
+              <span className="block mt-1 text-sm">
+                ⚠️ Uso privato - non sostituisce documentazione medica ufficiale
+              </span>
+            </AlertDescription>
+          </Alert>
+        </div>
+
+        {/* Filtri e Azioni */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Filtri e Ricerca
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Filtro Paziente */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Seleziona paziente</label>
+                <select
+                  value={selectedPaziente}
+                  onChange={(e) => setSelectedPaziente(e.target.value)}
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                >
+                  <option value="">Seleziona un paziente...</option>
+                  {pazienti.map((paziente) => (
+                    <option key={paziente.id} value={paziente.id}>
+                      {paziente.nome} {paziente.cognome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Nuova Seduta */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Azioni</label>
+                <SedutaForm 
+                  pazientePreselezionato={selectedPaziente || undefined}
+                  trigger={
+                    <Button className="w-full medical-gradient text-primary-foreground">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Nuova Seduta
+                    </Button>
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Info Paziente Selezionato */}
+            {pazienteSelezionato && (
+              <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-primary">
+                    {pazienteSelezionato.nome} {pazienteSelezionato.cognome}
+                  </span>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {getSeduteByPaziente(selectedPaziente).length} sedute registrate
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Timeline Sedute */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Timeline Sedute
+              <Badge variant="secondary">{seduteVisualizzate.length}</Badge>
+            </h2>
+          </div>
+
+          {seduteVisualizzate.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nessuna seduta registrata</h3>
+                <p className="text-muted-foreground mb-4">
+                  {selectedPaziente 
+                    ? "Nessuna seduta trovata per questo paziente"
+                    : "Seleziona un paziente per visualizzare le sedute del diario clinico"
+                  }
+                </p>
+                <SedutaForm 
+                  pazientePreselezionato={selectedPaziente || undefined}
+                  trigger={
+                    <Button className="medical-gradient text-primary-foreground">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Aggiungi Prima Seduta
+                    </Button>
+                  }
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {seduteVisualizzate.map((seduta) => (
+                <Card key={seduta.id} className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          {seduta.titolo}
+                        </CardTitle>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {seduta.paziente.nome} {seduta.paziente.cognome}
+                            <Clock className="h-3 w-3" />
+                            {format(new Date(seduta.data_seduta), "dd MMMM yyyy", { locale: it })}
                           </span>
-                        )}
+                          {!selectedPaziente && seduta.paziente && (
+                            <span className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              {seduta.paziente.nome} {seduta.paziente.cognome}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <SedutaForm 
+                          sedutaToEdit={seduta}
+                          trigger={
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteSeduta(seduta.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <SedutaForm 
-                        sedutaToEdit={seduta}
-                        trigger={
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeleteSeduta(seduta.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Note Cliniche */}
-                  <div>
-                    <h4 className="font-medium mb-2 flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Note Cliniche
-                    </h4>
-                    <div className="p-3 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap">
-                      {(seduta as any).note_decriptate || "Nessuna nota disponibile"}
-                    </div>
-                  </div>
-
-                  {/* Esercizio Assegnato */}
-                  {seduta.esercizio_assegnato && (
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {/* Note Cliniche */}
                     <div>
                       <h4 className="font-medium mb-2 flex items-center gap-2">
-                        <Activity className="h-4 w-4" />
-                        Esercizio Assegnato
+                        <FileText className="h-4 w-4" />
+                        Note Cliniche
                       </h4>
-                      <div className="p-3 bg-primary/5 rounded-lg text-sm">
-                        {seduta.esercizio_assegnato}
+                      <div className="p-3 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap">
+                        {(seduta as any).note_decriptate || "Nessuna nota disponibile"}
                       </div>
                     </div>
-                  )}
 
-                  {/* Meta informazioni */}
-                  <div className="pt-2 border-t text-xs text-muted-foreground">
-                    Creata il {format(new Date(seduta.created_at), "dd/MM/yyyy 'alle' HH:mm", { locale: it })}
-                    {seduta.updated_at !== seduta.created_at && (
-                      <span> • Modificata il {format(new Date(seduta.updated_at), "dd/MM/yyyy 'alle' HH:mm", { locale: it })}</span>
+                    {/* Esercizio Assegnato */}
+                    {seduta.esercizio_assegnato && (
+                      <div>
+                        <h4 className="font-medium mb-2 flex items-center gap-2">
+                          <Activity className="h-4 w-4" />
+                          Esercizio Assegnato
+                        </h4>
+                        <div className="p-3 bg-primary/5 rounded-lg text-sm">
+                          {seduta.esercizio_assegnato}
+                        </div>
+                      </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Disclaimer Footer */}
-      <Alert className="border-amber-200 bg-amber-50">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertDescription className="text-amber-800">
-          <strong>Importante:</strong> Questo diario clinico è uno strumento di supporto privato. 
-          Non sostituisce la documentazione medica ufficiale e deve essere utilizzato in conformità 
-          alle normative sulla privacy e protezione dei dati sanitari (GDPR).
-        </AlertDescription>
-      </Alert>
-      </div>
-    </DashboardLayout>
+                    {/* Meta informazioni */}
+                    <div className="pt-2 border-t text-xs text-muted-foreground">
+                      Creata il {format(new Date(seduta.created_at), "dd/MM/yyyy 'alle' HH:mm", { locale: it })}
+                      {seduta.updated_at !== seduta.created_at && (
+                        <span> • Modificata il {format(new Date(seduta.updated_at), "dd/MM/yyyy 'alle' HH:mm", { locale: it })}</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Disclaimer Footer */}
+        <Alert className="border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            <strong>Importante:</strong> Questo diario clinico è uno strumento di supporto privato. 
+            Non sostituisce la documentazione medica ufficiale e deve essere utilizzato in conformità 
+            alle normative sulla privacy e protezione dei dati sanitari (GDPR).
+          </AlertDescription>
+        </Alert>
+        </div>
+      </DashboardLayout>
+    </ProtectedDiary>
   );
 }
 
