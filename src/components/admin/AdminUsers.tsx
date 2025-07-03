@@ -48,41 +48,46 @@ export function AdminUsers({ userRole }: AdminUsersProps) {
 
   const fetchUsers = async () => {
     try {
-        // Get users with their subscription data
-        const { data: usersData, error } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            user_subscriptions (
-              plan_name,
-              status
-            )
-          `);
+      setLoading(true);
+      
+      // Get all profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        if (error) throw error;
+      if (profilesError) throw profilesError;
 
-        // Get invoice counts for each user
-        const usersWithStats = await Promise.all(
-          (usersData || []).map(async (user: any) => {
-            const { count: fattureCount } = await supabase
-              .from('fatture')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.user_id);
+      // Get all subscriptions
+      const { data: subscriptions, error: subscriptionsError } = await supabase
+        .from('user_subscriptions')
+        .select('*');
 
-            const subscriptions = Array.isArray(user.user_subscriptions) ? user.user_subscriptions : [];
+      if (subscriptionsError) throw subscriptionsError;
 
-            return {
-              ...user,
-              plan_name: subscriptions[0]?.plan_name || 'FREE',
-              status: subscriptions[0]?.status || 'active',
-              fatture_count: fattureCount || 0
-            };
-          })
-        );
+      // Get invoice counts for each user
+      const usersWithStats = await Promise.all(
+        (profiles || []).map(async (user: any) => {
+          const { count: fattureCount } = await supabase
+            .from('fatture')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.user_id);
+
+          // Find subscription for this user
+          const userSubscription = subscriptions?.find(sub => sub.user_id === user.user_id);
+
+          return {
+            ...user,
+            plan_name: userSubscription?.plan_name || 'FREE',
+            status: userSubscription?.status || 'active',
+            fatture_count: fattureCount || 0
+          };
+        })
+      );
 
       setUsers(usersWithStats);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Errore caricamento utenti:', error);
     } finally {
       setLoading(false);
     }
