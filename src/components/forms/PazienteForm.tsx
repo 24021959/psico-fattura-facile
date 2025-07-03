@@ -20,7 +20,6 @@ interface PazienteFormProps {
 }
 
 export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
-  console.log('PazienteForm rendered with paziente:', paziente);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome: paziente?.nome || "",
@@ -63,10 +62,15 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
     }
 
     try {
+      const dataToSave = {
+        ...formData,
+        prestazione_default_id: formData.prestazione_default_id === "none" ? null : formData.prestazione_default_id || null
+      };
+      
       if (paziente) {
-        await updatePaziente(paziente.id, formData);
+        await updatePaziente(paziente.id, dataToSave);
       } else {
-        await createPaziente(formData);
+        await createPaziente(dataToSave);
       }
       
       setOpen(false);
@@ -93,10 +97,7 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
-      console.log('Dialog open state changing to:', newOpen);
-      setOpen(newOpen);
-    }}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="medical-gradient text-primary-foreground hover:opacity-90">
@@ -257,7 +258,7 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
                     <SelectValue placeholder="Nessuna prestazione predefinita" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nessuna prestazione predefinita</SelectItem>
+                    <SelectItem value="none">Nessuna prestazione predefinita</SelectItem>
                     {prestazioni.filter(p => p.attiva).map((prestazione) => (
                       <SelectItem key={prestazione.id} value={prestazione.id}>
                         {prestazione.nome} - €{Number(prestazione.prezzo_unitario).toFixed(2)}
