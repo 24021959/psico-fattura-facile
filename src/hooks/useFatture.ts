@@ -1,33 +1,16 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
-import { calcolaComponentiFiscali, type FiscalData } from '@/utils/fiscalUtils';
-import type { Tables } from '@/integrations/supabase/types';
-
-type Fattura = Tables<'fatture'>;
-type RigaFattura = Tables<'righe_fattura'>;
-type Paziente = Tables<'pazienti'>;
-type Prestazione = Tables<'prestazioni'>;
-
-interface FatturaDettagliata extends Fattura {
-  paziente?: Paziente | any;
-  righe_fattura?: (RigaFattura & { prestazione?: Prestazione | any })[];
-}
-
-interface PrestazioneRiga {
-  prestazione_id: string;
-  quantita: number;
-  descrizione_personalizzata?: string;
-}
-
-interface FatturaFormData {
-  paziente_id: string;
-  prestazioni: PrestazioneRiga[];
-  data_prestazione: string;
-  metodo_pagamento: string;
-  note?: string;
-}
+import { FattureService } from '@/services/fattureService';
+import { calculateFattureStats } from '@/utils/fattureStats';
+import type { 
+  FatturaDettagliata, 
+  FatturaFormData, 
+  Paziente, 
+  Prestazione, 
+  FatturaStats 
+} from '@/types/fattura';
 
 export function useFatture() {
   const [fatture, setFatture] = useState<FatturaDettagliata[]>([]);
@@ -36,68 +19,19 @@ export function useFatture() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
 
-  // Genera numero fattura progressivo
-  const generateNumeroFattura = async (): Promise<string> => {
-    const currentYear = new Date().getFullYear();
-    
-    const { data: lastFattura } = await supabase
-      .from('fatture')
-      .select('numero_fattura')
-      .eq('user_id', user?.id)
-      .like('numero_fattura', `${currentYear}-%`)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (lastFattura && lastFattura.length > 0) {
-      const lastNumber = parseInt(lastFattura[0].numero_fattura.split('-')[1]);
-      return `${currentYear}-${String(lastNumber + 1).padStart(3, '0')}`;
-    }
-    
-    return `${currentYear}-001`;
-  };
+  // Service instance
+  const service = user ? new FattureService(user.id) : null;
 
   const fetchFatture = async () => {
-    if (!user) return;
+    if (!service) return;
     
     try {
       setLoading(true);
-      
-      let query = supabase
-        .from('fatture')
-        .select(`
-          *,
-          paziente:pazienti!fatture_paziente_id_fkey(id, nome, cognome, codice_fiscale),
-          righe_fattura(
-            *,
-            prestazione:prestazioni!righe_fattura_prestazione_id_fkey(nome, prezzo_unitario)
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (searchTerm) {
-        // Cerca per numero fattura o paziente
-        const { data: pazientiMatch } = await supabase
-          .from('pazienti')
-          .select('id')
-          .eq('user_id', user.id)
-          .or(`nome.ilike.%${searchTerm}%,cognome.ilike.%${searchTerm}%`);
-        
-        const pazientiIds = pazientiMatch?.map(p => p.id) || [];
-        
-        if (pazientiIds.length > 0) {
-          query = query.or(`numero_fattura.ilike.%${searchTerm}%,paziente_id.in.(${pazientiIds.join(',')})`);
-        } else {
-          query = query.ilike('numero_fattura', `%${searchTerm}%`);
-        }
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setFatture(data || []);
+      const data = await service.fetchFatture(searchTerm);
+      setFatture(data);
     } catch (error) {
       console.error('Errore caricamento fatture:', error);
       toast({
@@ -111,168 +45,42 @@ export function useFatture() {
   };
 
   const fetchPazienti = async () => {
-    if (!user) return;
+    if (!service) return;
     
     try {
-      const { data, error } = await supabase
-        .from('pazienti')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('nome', { ascending: true });
-
-      if (error) throw error;
-      setPazienti(data || []);
+      const data = await service.fetchPazienti();
+      setPazienti(data);
     } catch (error) {
       console.error('Errore caricamento pazienti:', error);
     }
   };
 
   const fetchPrestazioni = async () => {
-    if (!user) return;
+    if (!service) return;
     
     try {
-      const { data, error } = await supabase
-        .from('prestazioni')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('attiva', true)
-        .order('nome', { ascending: true });
-
-      if (error) throw error;
-      setPrestazioni(data || []);
+      const data = await service.fetchPrestazioni();
+      setPrestazioni(data);
     } catch (error) {
       console.error('Errore caricamento prestazioni:', error);
     }
   };
 
   const createFattura = async (fatturaData: FatturaFormData) => {
-    if (!user) return null;
+    if (!service) return null;
 
     try {
-      // Valida che ci siano prestazioni valide
-      const prestazioniValide = fatturaData.prestazioni.filter(p => p.prestazione_id);
-      if (prestazioniValide.length === 0) {
-        throw new Error('Aggiungi almeno una prestazione');
-      }
-
-      // Ottieni dati profilo per calcoli fiscali
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile) {
-        throw new Error('Profilo professionista non configurato. Configura i tuoi dati nelle Impostazioni.');
-      }
-
-      const numeroFattura = await generateNumeroFattura();
-
-      // Calcola totali di tutte le prestazioni
-      let importoTotalePrestazioni = 0;
-      for (const riga of prestazioniValide) {
-        const prestazione = prestazioni.find(p => p.id === riga.prestazione_id);
-        if (prestazione) {
-          importoTotalePrestazioni += Number(prestazione.prezzo_unitario) * riga.quantita;
-        }
-      }
-
-      // Calcola componenti fiscali sul totale
-      const fiscalData: FiscalData = {
-        regime_fiscale: (profile as any).regime_fiscale || 'RF19',
-        importo_prestazione: importoTotalePrestazioni,
-        percentuale_enpap: (profile as any).percentuale_enpap || 2,
-        enpap_a_paziente: (profile as any).enpap_a_paziente ?? true
-      };
-
-      const calcoli = calcolaComponentiFiscali(fiscalData);
-
-      // Crea la fattura
-      const { data: fattura, error: fatturaError } = await supabase
-        .from('fatture')
-        .insert({
-          user_id: user.id,
-          paziente_id: fatturaData.paziente_id,
-          numero_fattura: numeroFattura,
-          data_fattura: fatturaData.data_prestazione,
-          data_scadenza: null,
-          stato: 'inviata',
-          subtotale: calcoli.imponibile,
-          iva_percentuale: 0, // IVA esente per prestazioni sanitarie
-          iva_importo: 0,
-          totale: calcoli.totale,
-          metodo_pagamento: fatturaData.metodo_pagamento,
-          note: fatturaData.note || null
-        })
-        .select()
-        .single();
-
-      if (fatturaError) throw fatturaError;
-
-      // Crea le righe fattura per tutte le prestazioni
-      for (const riga of prestazioniValide) {
-        const prestazione = prestazioni.find(p => p.id === riga.prestazione_id);
-        if (prestazione) {
-          const importoRiga = Number(prestazione.prezzo_unitario) * riga.quantita;
-          const descrizione = riga.descrizione_personalizzata || 
-            `${prestazione.nome}${riga.quantita > 1 ? ` (x${riga.quantita})` : ''} - ${fatturaData.data_prestazione}`;
-          
-          const { error: rigaError } = await supabase
-            .from('righe_fattura')
-            .insert({
-              fattura_id: fattura.id,
-              prestazione_id: prestazione.id,
-              descrizione: descrizione,
-              quantita: riga.quantita,
-              prezzo_unitario: Number(prestazione.prezzo_unitario),
-              totale: importoRiga
-            });
-
-          if (rigaError) throw rigaError;
-        }
-      }
-
-      // Aggiungi riga ENPAP se addebitata al paziente
-      if (calcoli.enpap > 0) {
-        const { error: enpapError } = await supabase
-          .from('righe_fattura')
-          .insert({
-            fattura_id: fattura.id,
-            prestazione_id: null,
-            descrizione: `Contributo ENPAP ${fiscalData.percentuale_enpap}%`,
-            quantita: 1,
-            prezzo_unitario: calcoli.enpap,
-            totale: calcoli.enpap
-          });
-
-        if (enpapError) throw enpapError;
-      }
-
-      // Aggiungi riga bollo se applicabile
-      if (calcoli.bollo > 0) {
-        const { error: bolloError } = await supabase
-          .from('righe_fattura')
-          .insert({
-            fattura_id: fattura.id,
-            prestazione_id: null,
-            descrizione: 'Imposta di bollo',
-            quantita: 1,
-            prezzo_unitario: calcoli.bollo,
-            totale: calcoli.bollo
-          });
-
-        if (bolloError) throw bolloError;
-      }
-
+      const result = await service.createFattura(fatturaData, prestazioni, profile);
+      
       // Aggiorna la lista delle fatture
       await fetchFatture();
       
       toast({
         title: "Successo",
-        description: `Fattura ${numeroFattura} creata correttamente`
+        description: `Fattura ${result.numero_fattura} creata correttamente`
       });
       
-      return fattura;
+      return result;
     } catch (error) {
       console.error('Errore creazione fattura:', error);
       toast({
@@ -285,16 +93,10 @@ export function useFatture() {
   };
 
   const updateStatoFattura = async (id: string, nuovoStato: 'bozza' | 'inviata' | 'pagata' | 'scaduta') => {
-    try {
-      const { data, error } = await supabase
-        .from('fatture')
-        .update({ stato: nuovoStato })
-        .eq('id', id)
-        .eq('user_id', user?.id)
-        .select()
-        .single();
+    if (!service) return null;
 
-      if (error) throw error;
+    try {
+      const data = await service.updateStatoFattura(id, nuovoStato);
       
       // Aggiorna lo stato locale
       setFatture(prev => 
@@ -319,68 +121,16 @@ export function useFatture() {
   };
 
   const duplicateFattura = async (fatturaId: string) => {
+    if (!service) return null;
+
     try {
-      // Recupera la fattura originale con tutti i dati
-      const { data: fatturaOriginale, error: fetchError } = await supabase
-        .from('fatture')
-        .select(`
-          *,
-          paziente:pazienti!fatture_paziente_id_fkey(*),
-          righe_fattura(*)
-        `)
-        .eq('id', fatturaId)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (fetchError) throw fetchError;
-      if (!fatturaOriginale) throw new Error('Fattura non trovata');
-
-      const numeroFattura = await generateNumeroFattura();
+      const nuovaFattura = await service.duplicateFattura(fatturaId);
       
-      // Crea la nuova fattura
-      const { data: nuovaFattura, error: createError } = await supabase
-        .from('fatture')
-        .insert({
-          user_id: user!.id,
-          paziente_id: fatturaOriginale.paziente_id,
-          numero_fattura: numeroFattura,
-          data_fattura: new Date().toISOString().split('T')[0],
-          data_scadenza: fatturaOriginale.data_scadenza,
-          stato: 'bozza',
-          subtotale: fatturaOriginale.subtotale,
-          iva_percentuale: fatturaOriginale.iva_percentuale,
-          iva_importo: fatturaOriginale.iva_importo,
-          totale: fatturaOriginale.totale,
-          note: fatturaOriginale.note
-        })
-        .select()
-        .single();
-
-      if (createError) throw createError;
-
-      // Duplica le righe fattura
-      if (fatturaOriginale.righe_fattura?.length > 0) {
-        const righeData = fatturaOriginale.righe_fattura.map(riga => ({
-          fattura_id: nuovaFattura.id,
-          prestazione_id: riga.prestazione_id,
-          descrizione: riga.descrizione,
-          quantita: riga.quantita,
-          prezzo_unitario: riga.prezzo_unitario,
-          totale: riga.totale
-        }));
-
-        const { error: righeError } = await supabase
-          .from('righe_fattura')
-          .insert(righeData);
-
-        if (righeError) throw righeError;
-      }
-
       await fetchFatture();
       
       toast({
         title: "Successo",
-        description: `Fattura duplicata: ${numeroFattura}`
+        description: `Fattura duplicata: ${nuovaFattura.numero_fattura}`
       });
       
       return nuovaFattura;
@@ -396,14 +146,10 @@ export function useFatture() {
   };
 
   const deleteFattura = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('fatture')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user?.id);
+    if (!service) return false;
 
-      if (error) throw error;
+    try {
+      await service.deleteFattura(id);
       
       setFatture(prev => prev.filter(f => f.id !== id));
       toast({
@@ -431,16 +177,8 @@ export function useFatture() {
     }
   }, [user, searchTerm]);
 
-  // Statistiche derivate
-  const stats = {
-    totale: fatture.length,
-    fatturato: fatture.reduce((sum, f) => sum + Number(f.totale), 0),
-    daIncassare: fatture
-      .filter(f => f.stato === 'inviata' || f.stato === 'scaduta')
-      .reduce((sum, f) => sum + Number(f.totale), 0),
-    scadute: fatture.filter(f => f.stato === 'scaduta').length,
-    pagate: fatture.filter(f => f.stato === 'pagata').length
-  };
+  // Calcola statistiche
+  const stats: FatturaStats = calculateFattureStats(fatture);
 
   return {
     fatture,
