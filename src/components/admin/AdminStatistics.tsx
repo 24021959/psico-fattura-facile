@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { Users, FileText, CreditCard, Calendar, TrendingUp, RefreshCw } from 'lucide-react';
+import { Users, FileText, CreditCard, Calendar, TrendingUp, RefreshCw, BarChart3 } from 'lucide-react';
 
 interface AdminStatisticsProps {
   userRole: string | null;
@@ -224,44 +225,57 @@ export function AdminStatistics({ userRole }: AdminStatisticsProps) {
         <Card>
           <CardHeader>
             <CardTitle>Crescita Utenti</CardTitle>
-            <CardDescription>Ultimi 6 mesi</CardDescription>
+            <CardDescription>Ultimi 6 mesi - Trend crescita</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={stats.userGrowth}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {stats.userGrowth.map((item, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{item.month}</span>
+                  <div className="flex items-center gap-3 flex-1 ml-4">
+                    <Progress 
+                      value={(item.users / Math.max(...stats.userGrowth.map(g => g.users))) * 100} 
+                      className="flex-1"
+                    />
+                    <Badge variant="outline">{item.users}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Distribuzione Piani</CardTitle>
-            <CardDescription>Tipologie abbonamento</CardDescription>
+            <CardDescription>Tipologie abbonamento attive</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={stats.planDistribution}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
-                  {stats.planDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {stats.planDistribution.map((plan, index) => {
+                const total = stats.planDistribution.reduce((sum, p) => sum + p.value, 0);
+                const percentage = total > 0 ? (plan.value / total) * 100 : 0;
+                
+                return (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: plan.color }}
+                      ></div>
+                      <span className="text-sm font-medium">{plan.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-1 ml-4">
+                      <Progress 
+                        value={percentage}
+                        className="flex-1"
+                      />
+                      <Badge variant="outline">{plan.value} ({percentage.toFixed(1)}%)</Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -269,18 +283,43 @@ export function AdminStatistics({ userRole }: AdminStatisticsProps) {
       <Card>
         <CardHeader>
           <CardTitle>Fatture Generate</CardTitle>
-          <CardDescription>Trend mensile fatturazione</CardDescription>
+          <CardDescription>Trend mensile fatturazione - Volume e valore</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stats.invoiceStats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#8b5cf6" name="Numero Fatture" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-4">
+            {stats.invoiceStats.map((item, index) => (
+              <div key={index} className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{item.month}</span>
+                  <div className="flex items-center gap-4">
+                    <Badge variant="outline">
+                      <BarChart3 className="h-3 w-3 mr-1" />
+                      {item.count} fatture
+                    </Badge>
+                    <Badge variant="outline">
+                      €{item.amount.toFixed(2)}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Volume</div>
+                    <Progress 
+                      value={(item.count / Math.max(...stats.invoiceStats.map(s => s.count))) * 100}
+                      className="h-2"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Valore</div>
+                    <Progress 
+                      value={(item.amount / Math.max(...stats.invoiceStats.map(s => s.amount))) * 100}
+                      className="h-2"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
