@@ -256,22 +256,22 @@ export class FatturaPDFGenerator {
 }
 
 // Funzione helper per generare e scaricare PDF
-export async function generaEScaricaPDF(fattura: FatturaData) {
-  // Dati professionista mock - in un'app reale verrebbero da impostazioni utente
-  const professionista: ProfessionistaData = {
-    nome: "Maria",
-    cognome: "Rossi",
-    codiceFiscale: "RSSMRA80A01H501Z",
-    partitaIva: "12345678901",
-    indirizzo: "Via Roma, 123",
-    citta: "Milano",
-    cap: "20100",
-    telefono: "+39 02 1234567",
-    email: "maria.rossi@psicologo.it",
-    pec: "maria.rossi@pec.psicologo.it",
-    iban: "IT60 X123 4567 8901 2345 678901",
-    ordineAlbo: "Ordine Psicologi Lombardia",
-    numeroIscrizione: "12345"
+export async function generaEScaricaPDF(fattura: FatturaData, professionistaData?: ProfessionistaData) {
+  // Dati professionista - usa quelli passati o valori di fallback
+  const professionista: ProfessionistaData = professionistaData || {
+    nome: "Nome",
+    cognome: "Cognome",
+    codiceFiscale: "XXXXXX00X00X000X",
+    partitaIva: "00000000000",
+    indirizzo: "Via da configurare, 0",
+    citta: "Città da configurare",
+    cap: "00000",
+    telefono: "+39 000 0000000",
+    email: "email@daconfiguarare.it",
+    pec: "pec@daconfiguarare.it", 
+    iban: "IT00 X000 0000 0000 0000 000000",
+    ordineAlbo: "Ordine da configurare",
+    numeroIscrizione: "00000"
   };
   
   const generator = new FatturaPDFGenerator();
@@ -286,4 +286,36 @@ export async function generaEScaricaPDF(fattura: FatturaData) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// Funzione per aprire anteprima PDF in nuova tab
+export async function anteprimaPDF(fattura: FatturaData, professionistaData?: ProfessionistaData) {
+  // Dati professionista - usa quelli passati o valori di fallback
+  const professionista: ProfessionistaData = professionistaData || {
+    nome: "Nome",
+    cognome: "Cognome",
+    codiceFiscale: "XXXXXX00X00X000X",
+    partitaIva: "00000000000",
+    indirizzo: "Via da configurare, 0",
+    citta: "Città da configurare",
+    cap: "00000",
+    telefono: "+39 000 0000000",
+    email: "email@daconfiguarare.it",
+    pec: "pec@daconfiguarare.it", 
+    iban: "IT00 X000 0000 0000 0000 000000",
+    ordineAlbo: "Ordine da configurare",
+    numeroIscrizione: "00000"
+  };
+  
+  const generator = new FatturaPDFGenerator();
+  const pdfBlob = await generator.generateFattura(fattura, professionista);
+  
+  // Apri in nuova tab per anteprima
+  const url = URL.createObjectURL(pdfBlob);
+  window.open(url, '_blank');
+  
+  // Pulizia URL dopo qualche secondo
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 5000);
 }

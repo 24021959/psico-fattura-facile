@@ -7,10 +7,34 @@ import { Badge } from "@/components/ui/badge";
 import { FatturaForm } from "@/components/forms/FatturaForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFatture } from "@/hooks/useFatture";
+import { useProfile } from "@/hooks/useProfile";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Fatture() {
   const { fatture, loading, searchTerm, setSearchTerm, updateStatoFattura, deleteFattura, stats } = useFatture();
+  const { profile } = useProfile();
+  
+  // Funzione helper per convertire il profilo Supabase nel formato PDF
+  const getProfessionistaData = () => {
+    if (!profile) return undefined;
+    
+    return {
+      nome: profile.nome,
+      cognome: profile.cognome,
+      codiceFiscale: profile.codice_fiscale || 'N/A',
+      partitaIva: profile.partita_iva || 'N/A',
+      indirizzo: profile.indirizzo || 'Via da configurare, 0',
+      citta: profile.citta || 'Città da configurare',
+      cap: profile.cap || '00000',
+      telefono: profile.telefono || '+39 000 0000000',
+      email: profile.email,
+      pec: '', // Non abbiamo questo campo nel profilo
+      iban: '', // Non abbiamo questo campo nel profilo
+      ordineAlbo: 'Ordine Psicologi', // Valore generico
+      numeroIscrizione: 'N/A' // Non abbiamo questo campo nel profilo
+    };
+  };
+
   const handleUpdateStato = async (id: string, nuovoStato: 'bozza' | 'inviata' | 'pagata' | 'scaduta') => {
     await updateStatoFattura(id, nuovoStato);
   };
@@ -259,8 +283,8 @@ export default function Fatture() {
                         size="sm"
                         onClick={() => {
                           console.log('Visualizza fattura clicked:', fattura);
-                          // Per ora stesso comportamento del PDF, in futuro potrebbe aprire una modal
-                          import('../utils/fatturaPDF').then(({ generaEScaricaPDF }) => {
+                          // Usa anteprima per aprire in nuova tab invece di scaricare
+                          import('../utils/fatturaPDF').then(({ anteprimaPDF }) => {
                             console.log('PDF module loaded, preparing data...');
                             console.log('Raw fattura data:', fattura);
                             
@@ -292,8 +316,8 @@ export default function Fatture() {
                               stato: fattura.stato || 'inviata',
                               metodoPagamento: 'Non specificato'
                             };
-                            console.log('Calling generaEScaricaPDF with data:', fatturaPerPDF);
-                            generaEScaricaPDF(fatturaPerPDF).catch(error => {
+                             console.log('Calling anteprimaPDF with data:', fatturaPerPDF);
+                             anteprimaPDF(fatturaPerPDF, getProfessionistaData()).catch(error => {
                               console.error('Error generating PDF:', error);
                             });
                           }).catch(error => {
@@ -340,8 +364,8 @@ export default function Fatture() {
                               stato: fattura.stato || 'inviata',
                               metodoPagamento: 'Non specificato'
                             };
-                            console.log('Calling generaEScaricaPDF for download with data:', fatturaPerPDF);
-                            generaEScaricaPDF(fatturaPerPDF).catch(error => {
+                             console.log('Calling generaEScaricaPDF for download with data:', fatturaPerPDF);
+                             generaEScaricaPDF(fatturaPerPDF, getProfessionistaData()).catch(error => {
                               console.error('Error generating PDF for download:', error);
                             });
                           }).catch(error => {
