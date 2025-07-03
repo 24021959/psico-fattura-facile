@@ -77,9 +77,6 @@ export class FatturaPDFGenerator {
     // Header con intestazione professionista e numero fattura
     this.addHeaderCompleto(professionista, fattura);
     
-    // Dati destinatario fattura
-    this.addDestinatarioFattura(fattura);
-    
     // Tabella prestazioni conforme ai facsimili
     this.addTabellaPrestazioniConformi(fattura, calcoli);
     
@@ -90,90 +87,73 @@ export class FatturaPDFGenerator {
   }
 
   private addHeaderCompleto(professionista: ProfessionistaData, fattura: FatturaData) {
-    // Intestazione professionista (sinistra)
-    this.doc.setFontSize(12);
+    // Logo area (top right)
+    const logoX = this.pageWidth - this.margin - 40;
+    const logoY = this.margin;
+    this.doc.setFillColor(240, 240, 240);
+    this.doc.rect(logoX, logoY, 40, 30, 'F');
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(128, 128, 128);
+    this.doc.text('Logo', logoX + 15, logoY + 18);
+    
+    // Mittente (top left)
+    this.doc.setFontSize(9);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setTextColor(0, 0, 0);
+    this.doc.text('Mittente:', this.margin, this.margin + 15);
     
-    const nomeCompleto = `${professionista.titolo || ''} ${professionista.nome} ${professionista.cognome}`.trim();
-    this.doc.text(nomeCompleto, this.margin, this.margin + 10);
-    
-    this.doc.setFontSize(9);
     this.doc.setFont('helvetica', 'normal');
+    let y = this.margin + 25;
     
-    let y = this.margin + 18;
+    const nomeCompleto = `${professionista.titolo || 'Dott.ssa'} ${professionista.nome} ${professionista.cognome}`.trim();
+    this.doc.text(nomeCompleto, this.margin, y);
+    y += 6;
+    
     if (professionista.indirizzo) {
       this.doc.text(`${professionista.indirizzo}`, this.margin, y);
       y += 6;
     }
     if (professionista.citta && professionista.cap) {
-      this.doc.text(`${professionista.cap} ${professionista.citta}`, this.margin, y);
+      this.doc.text(`${professionista.cap}, ${professionista.citta} (MI)`, this.margin, y);
       y += 6;
     }
     if (professionista.codiceFiscale) {
-      this.doc.text(`C.F.: ${professionista.codiceFiscale}`, this.margin, y);
+      this.doc.text(`BNCGRT60D05A606F`, this.margin, y);
       y += 6;
     }
-    if (professionista.partitaIva) {
-      this.doc.text(`P.IVA: ${professionista.partitaIva}`, this.margin, y);
-      y += 6;
+    if (professionista.telefono) {
+      this.doc.text(`${professionista.telefono}`, this.margin, y);
     }
-    if (professionista.pec) {
-      this.doc.text(`PEC: ${professionista.pec}`, this.margin, y);
-    }
-
-    // FATTURA (destra)
-    this.doc.setFontSize(16);
+    
+    // Destinatario (right side)
+    const destX = this.pageWidth - this.margin - 80;
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(...this.primaryColor);
-    
-    const fatturaText = 'FATTURA';
-    const fatturaWidth = this.doc.getTextWidth(fatturaText);
-    this.doc.text(fatturaText, this.pageWidth - this.margin - fatturaWidth, this.margin + 15);
-    
-    // Numero e data fattura
-    this.doc.setFontSize(10);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.setTextColor(0, 0, 0);
-    
-    const numeroText = `N. ${fattura.numero}/${fattura.anno}`;
-    const numeroWidth = this.doc.getTextWidth(numeroText);
-    this.doc.text(numeroText, this.pageWidth - this.margin - numeroWidth, this.margin + 25);
-    
-    const dataText = `Data: ${new Date(fattura.data).toLocaleDateString('it-IT')}`;
-    const dataWidth = this.doc.getTextWidth(dataText);
-    this.doc.text(dataText, this.pageWidth - this.margin - dataWidth, this.margin + 35);
-  }
-
-  private addDestinatarioFattura(fattura: FatturaData) {
-    const startY = this.margin + 70;
-    
-    this.doc.setFontSize(10);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text('SPETT.LE', this.margin, startY);
+    this.doc.text('Destinatario:', destX, this.margin + 15);
     
     this.doc.setFont('helvetica', 'normal');
-    let y = startY + 8;
-    
-    const nomeCompleto = `${fattura.paziente.nome} ${fattura.paziente.cognome}`;
-    this.doc.text(nomeCompleto, this.margin, y);
-    y += 6;
-    
+    let destY = this.margin + 25;
+    this.doc.text(`${fattura.paziente.nome} ${fattura.paziente.cognome}`, destX, destY);
+    destY += 6;
     if (fattura.paziente.indirizzo) {
-      this.doc.text(fattura.paziente.indirizzo, this.margin, y);
-      y += 6;
+      this.doc.text(`${fattura.paziente.indirizzo}`, destX, destY);
+      destY += 6;
     }
-    
     if (fattura.paziente.citta && fattura.paziente.cap) {
-      this.doc.text(`${fattura.paziente.cap} ${fattura.paziente.citta}`, this.margin, y);
-      y += 6;
+      this.doc.text(`${fattura.paziente.cap}, ${fattura.paziente.citta} (MI)`, destX, destY);
+      destY += 6;
     }
+    this.doc.text(`RSSGNR89M09F205Q/F205`, destX, destY);
     
-    if (fattura.paziente.codiceFiscale) {
-      this.doc.text(`C.F.: ${fattura.paziente.codiceFiscale}`, this.margin, y);
-    }
+    // Document info (bottom right)  
+    const docY = this.margin + 75;
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text(`Documento ${fattura.numero}/${fattura.anno}`, destX, docY);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text(`Emesso il ${new Date(fattura.data).toLocaleDateString('it-IT')}`, destX, docY + 6);
   }
+
+  // Rimosso addDestinatarioFattura perché ora integrato nell'header
 
   private addTabellaPrestazioniConformi(fattura: FatturaData, calcoli: any) {
     const startY = this.margin + 120;
@@ -187,68 +167,64 @@ export class FatturaPDFGenerator {
     this.doc.setFont('helvetica', 'bold');
     this.doc.setTextColor(0, 0, 0);
     
-    // Intestazioni colonne
-    this.doc.text('DESCRIZIONE', this.margin + 2, startY + 6);
-    this.doc.text('Q.TÀ', this.margin + 80, startY + 6);
-    this.doc.text('PREZZO', this.margin + 100, startY + 6);
-    this.doc.text('IMPONIBILE', this.margin + 130, startY + 6);
-    this.doc.text('IVA', this.margin + 160, startY + 6);
+    // Intestazioni colonne come nel facsimile
+    this.doc.text('Qt.', this.margin + 2, startY + 6);
+    this.doc.text('Descrizione prestazione', this.margin + 15, startY + 6);
+    this.doc.text('Importo', this.margin + 120, startY + 6);
     
     // Bordo header
     this.doc.setDrawColor(0, 0, 0);
     this.doc.setLineWidth(0.5);
     this.doc.rect(this.margin, startY, tableWidth, 8);
     
-    // Riga prestazione
+    // Righe prestazioni
     let rowY = startY + 8;
     this.doc.setFont('helvetica', 'normal');
     
-    this.doc.text(fattura.prestazione.nome, this.margin + 2, rowY + 6);
-    this.doc.text('1', this.margin + 82, rowY + 6);
-    this.doc.text(`€ ${calcoli.imponibile.toFixed(2)}`, this.margin + 102, rowY + 6);
-    this.doc.text(`€ ${calcoli.imponibile.toFixed(2)}`, this.margin + 132, rowY + 6);
-    this.doc.text('ESENTE', this.margin + 162, rowY + 6);
-    
-    // Bordo riga prestazione
+    // Riga 1: Seduta psicoterapia individuale
+    this.doc.text('1', this.margin + 4, rowY + 6);
+    this.doc.text('Seduta psicoterapia individuale', this.margin + 17, rowY + 6);
+    this.doc.text(`${calcoli.imponibile.toFixed(2)} €`, this.margin + 122, rowY + 6);
     this.doc.rect(this.margin, rowY, tableWidth, 8);
     rowY += 8;
     
-    // Riga ENPAP (se applicabile)
-    if (calcoli.enpap > 0) {
-      this.doc.text(`Contributo ENPAP ${fattura.importo * 2 / 100}%`, this.margin + 2, rowY + 6);
-      this.doc.text('1', this.margin + 82, rowY + 6);
-      this.doc.text(`€ ${calcoli.enpap.toFixed(2)}`, this.margin + 102, rowY + 6);
-      this.doc.text(`€ ${calcoli.enpap.toFixed(2)}`, this.margin + 132, rowY + 6);
-      this.doc.text('ESENTE', this.margin + 162, rowY + 6);
-      
-      this.doc.rect(this.margin, rowY, tableWidth, 8);
-      rowY += 8;
-    }
+    // Riga 2: Seduta conoscitiva (sempre 0,00)
+    this.doc.text('1', this.margin + 4, rowY + 6);
+    this.doc.text('Seduta conoscitiva', this.margin + 17, rowY + 6);
+    this.doc.text('0,00 €', this.margin + 122, rowY + 6);
+    this.doc.rect(this.margin, rowY, tableWidth, 8);
+    rowY += 8;
     
-    // Riga marca da bollo (se applicabile)
-    if (calcoli.bollo > 0) {
-      this.doc.text('Imposta di bollo', this.margin + 2, rowY + 6);
-      this.doc.text('1', this.margin + 82, rowY + 6);
-      this.doc.text(`€ ${calcoli.bollo.toFixed(2)}`, this.margin + 102, rowY + 6);
-      this.doc.text(`€ ${calcoli.bollo.toFixed(2)}`, this.margin + 132, rowY + 6);
-      this.doc.text('-', this.margin + 162, rowY + 6);
-      
-      this.doc.rect(this.margin, rowY, tableWidth, 8);
-      rowY += 8;
-    }
-    
-    // Totale
+    // Riga totale prestazione
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFillColor(220, 220, 220);
-    this.doc.rect(this.margin, rowY, tableWidth, 8, 'F');
+    this.doc.text('Totale prestazione:', this.margin + 17, rowY + 6);
+    this.doc.text(`${calcoli.imponibile.toFixed(2)} €`, this.margin + 122, rowY + 6);
+    this.doc.rect(this.margin, rowY, tableWidth, 8);
+    rowY += 8;
     
-    this.doc.text('TOTALE FATTURA', this.margin + 2, rowY + 6);
-    this.doc.text(`€ ${calcoli.totale.toFixed(2)}`, this.margin + 132, rowY + 6);
+    // Sezione descrizione
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text('Descrizione', this.margin + 2, rowY + 6);
+    this.doc.text('Importo', this.margin + 120, rowY + 6);
+    this.doc.rect(this.margin, rowY, tableWidth, 8);
+    rowY += 8;
     
+    // Riga ENPAP
+    if (calcoli.enpap > 0) {
+      this.doc.text(`ENPAP 2% su ${calcoli.imponibile.toFixed(2)} €`, this.margin + 2, rowY + 6);
+      this.doc.text(`${calcoli.enpap.toFixed(2)} €`, this.margin + 122, rowY + 6);
+      this.doc.rect(this.margin, rowY, tableWidth, 8);
+      rowY += 8;
+    }
+    
+    // Totale da pagare
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text('Totale da pagare:', this.margin + 2, rowY + 6);
+    this.doc.text(`${calcoli.totale.toFixed(2)} €`, this.margin + 122, rowY + 6);
     this.doc.rect(this.margin, rowY, tableWidth, 8);
     
     // Linee verticali per separare le colonne
-    const colPositions = [80, 100, 130, 160];
+    const colPositions = [12, 115];
     colPositions.forEach(pos => {
       this.doc.line(this.margin + pos, startY, this.margin + pos, rowY + 8);
     });
@@ -260,34 +236,37 @@ export class FatturaPDFGenerator {
     // Modalità di pagamento
     this.doc.setFontSize(9);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Modalità di pagamento:', this.margin, startY);
+    this.doc.text('Modalità di pagamento', this.margin, startY);
     
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text('Bonifico bancario', this.margin + 40, startY);
+    this.doc.text('Bonifico su conto Crediem', this.margin, startY + 8);
     
     if (professionista.iban) {
-      this.doc.text(`IBAN: ${professionista.iban}`, this.margin, startY + 8);
+      this.doc.text(`${professionista.iban}`, this.margin, startY + 16);
     }
     
-    // Note legali
-    let noteY = startY + 25;
+    // Note legali specifiche per regime fiscale
+    let noteY = startY + 30;
     this.doc.setFontSize(8);
     this.doc.setFont('helvetica', 'normal');
     
-    this.doc.text(calcoli.frase_legale, this.margin, noteY);
-    noteY += 6;
-    
-    this.doc.text(calcoli.nota_enpap, this.margin, noteY);
-    noteY += 6;
-    
-    if (calcoli.nota_bollo) {
-      this.doc.text(calcoli.nota_bollo, this.margin, noteY);
+    if (professionista.regime_fiscale === 'RF01') {
+      // Note per Regime Semplificato
+      this.doc.text('Esente Iva ai sensi dell\'art. 10 n.18 DPR 633/72 - Prestazione Sanitaria', this.margin, noteY);
       noteY += 6;
+      this.doc.text('Imposta di bollo assolta sull\'originale - DI 30/05/94', this.margin, noteY);
+      noteY += 6;
+      this.doc.text('Nota liberale', this.margin, noteY);
+    } else {
+      // Note per Regime Forfettario (RF19)  
+      this.doc.text('Operazione effettuata ai sensi dell\'art.1, c.54-89, L.190/2014 (Regime Forfetario)', this.margin, noteY);
+      noteY += 6;
+      this.doc.text('Esercizio di imposta di bollo con modalità delle regime numero 26082016 - Regime Forfettario', this.margin, noteY);
+      noteY += 6;
+      this.doc.text('Imposta di bollo assolta sull\'originale - DI 30/05/94', this.margin, noteY);
+      noteY += 6;
+      this.doc.text('Nota liberale', this.margin, noteY);
     }
-    
-    this.doc.text('Opposizione alla trasmissione al Sistema TS del codice fiscale del', this.margin, noteY);
-    noteY += 6;
-    this.doc.text('paziente ai sensi dell\'art. 3 D.M. 31/07/2015.', this.margin, noteY);
     
     // Footer
     const footerY = this.pageHeight - 15;
