@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminActivityLogger } from '@/hooks/useAdminActivityLogger';
+import { UserManagementDialog } from './UserManagementDialog';
 import { Search, UserCog, Mail, Calendar, CreditCard } from 'lucide-react';
 
 interface AdminUsersProps {
@@ -18,10 +19,12 @@ interface UserData {
   nome: string;
   cognome: string;
   email: string;
+  telefono: string | null;
   created_at: string;
   plan_name?: string;
   status?: string;
   fatture_count?: number;
+  user_id: string;
 }
 
 export function AdminUsers({ userRole }: AdminUsersProps) {
@@ -30,6 +33,8 @@ export function AdminUsers({ userRole }: AdminUsersProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { logActivity } = useAdminActivityLogger();
 
   useEffect(() => {
@@ -262,7 +267,14 @@ export function AdminUsers({ userRole }: AdminUsersProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setDialogOpen(true);
+                        }}
+                      >
                         <UserCog className="h-3 w-3 mr-1" />
                         Gestisci
                       </Button>
@@ -278,6 +290,14 @@ export function AdminUsers({ userRole }: AdminUsersProps) {
           </Table>
         </CardContent>
       </Card>
+
+      {/* User Management Dialog */}
+      <UserManagementDialog
+        user={selectedUser}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onUserUpdated={fetchUsers}
+      />
     </div>
   );
 }
