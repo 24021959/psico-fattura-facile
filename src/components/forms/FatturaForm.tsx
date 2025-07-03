@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Save, X, FileText, Calculator, User, Activity } from "lucide-react";
+import { Plus, Save, X, FileText, Calculator, User, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useFatture } from "@/hooks/useFatture";
+import { useProfile } from "@/hooks/useProfile";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Fattura = Tables<'fatture'>;
@@ -19,16 +20,24 @@ interface FatturaFormProps {
   pazientePreselezionato?: string;
 }
 
+interface PrestazioneRiga {
+  prestazione_id: string;
+  quantita: number;
+  descrizione_personalizzata?: string;
+}
+
 export function FatturaForm({ fattura, trigger, pazientePreselezionato }: FatturaFormProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     paziente_id: pazientePreselezionato || fattura?.paziente_id || "",
-    prestazione_id: "",
+    prestazioni: [{ prestazione_id: "", quantita: 1, descrizione_personalizzata: "" }] as PrestazioneRiga[],
     data_prestazione: new Date().toISOString().split('T')[0],
     metodo_pagamento: "",
     note: ""
   });
+  
   const { pazienti, prestazioni, createFattura } = useFatture();
+  const { profile } = useProfile();
   const { toast } = useToast();
 
   const metodiPagamento = [
@@ -40,7 +49,6 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
     "PayPal"
   ];
 
-  const prestazioneSelezionata = prestazioni.find(p => p.id === formData.prestazione_id);
   const pazienteSelezionato = pazienti.find(p => p.id === formData.paziente_id);
 
   // Auto-seleziona prestazione default quando si cambia paziente
@@ -48,76 +56,98 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
     const paziente = pazienti.find(p => p.id === pazienteId);
     const prestazioneDefault = (paziente as any)?.prestazione_default_id;
     
+    if (prestazioneDefault && formData.prestazioni[0].prestazione_id === "") {
+      setFormData({
+        ...formData, 
+        paziente_id: pazienteId,
+        prestazioni: [{ prestazione_id: prestazioneDefault, quantita: 1, descrizione_personalizzata: "" }]
+      });
+    } else {
+      setFormData({
+        ...formData, 
+        paziente_id: pazienteId
+      });
+    }
+  };
+
+  const aggiungiPrestazione = () => {
     setFormData({
-      ...formData, 
-      paziente_id: pazienteId,
-      prestazione_id: prestazioneDefault || formData.prestazione_id
+      ...formData,
+      prestazioni: [...formData.prestazioni, { prestazione_id: "", quantita: 1, descrizione_personalizzata: "" }]
     });
   };
 
+  const rimuoviPrestazione = (index: number) => {
+    if (formData.prestazioni.length > 1) {
+      const nuovePrestazioni = formData.prestazioni.filter((_, i) => i !== index);
+      setFormData({ ...formData, prestazioni: nuovePrestazioni });
+    }
+  };
+
+  const aggiornaPrestazione = (index: number, campo: keyof PrestazioneRiga, valore: any) => {
+    const nuovePrestazioni = [...formData.prestazioni];
+    nuovePrestazioni[index] = { ...nuovePrestazioni[index], [campo]: valore };
+    setFormData({ ...formData, prestazioni: nuovePrestazioni });
+  };
+
   // Calcoli automatici
-  const importoBase = prestazioneSelezionata?.prezzo_unitario ? Number(prestazioneSelezionata.prezzo_unitario) : 0;
-  const importoEnpap = importoBase * 2 / 100; // ENPAP 2%
-  const totaleFinale = importoBase + importoEnpap;
+  const totaleDettagliato = formData.prestazioni.reduce((acc, riga) => {
+    const prestazione = prestazioni.find(p => p.id === riga.prestazione_id);
+    if (prestazione) {
+      const importo = Number(prestazione.prezzo_unitario) * riga.quantita;
+      acc.imponibile += importo;
+    }
+    return acc;
+  }, { imponibile: 0 });
+
+  const percentualeEnpap = profile?.percentuale_enpap || 2;
+  const importoEnpap = totaleDettagliato.imponibile * percentualeEnpap / 100;
+  const totaleFinale = totaleDettagliato.imponibile + importoEnpap;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('FatturaForm: Starting submit with data:', formData);
-    console.log('FatturaForm: Available pazienti:', pazienti.length);
-    console.log('FatturaForm: Available prestazioni:', prestazioni.length);
+    const prestazioniValide = formData.prestazioni.filter(p => p.prestazione_id);
     
-    if (!formData.paziente_id || !formData.prestazione_id || !formData.metodo_pagamento) {
-      console.error('FatturaForm: Missing required fields', {
-        paziente_id: formData.paziente_id,
-        prestazione_id: formData.prestazione_id,
-        metodo_pagamento: formData.metodo_pagamento
-      });
+    if (!formData.paziente_id || prestazioniValide.length === 0 || !formData.metodo_pagamento) {
       toast({
         variant: "destructive",
         title: "Errore",
-        description: "Paziente, prestazione e metodo di pagamento sono obbligatori"
+        description: "Paziente, almeno una prestazione e metodo di pagamento sono obbligatori"
       });
       return;
     }
 
     try {
-      console.log('FatturaForm: Calling createFattura...');
       const result = await createFattura({
         paziente_id: formData.paziente_id,
-        prestazione_id: formData.prestazione_id,
+        prestazioni: prestazioniValide,
         data_prestazione: formData.data_prestazione,
         metodo_pagamento: formData.metodo_pagamento,
         note: formData.note || undefined
       });
-
-      console.log('FatturaForm: createFattura result:', result);
       
       if (result) {
-        console.log('FatturaForm: Success - closing dialog and resetting form');
         setOpen(false);
         
         // Reset form
         if (!pazientePreselezionato) {
           setFormData({
             paziente_id: "",
-            prestazione_id: "",
+            prestazioni: [{ prestazione_id: "", quantita: 1, descrizione_personalizzata: "" }],
             data_prestazione: new Date().toISOString().split('T')[0],
             metodo_pagamento: "",
             note: ""
           });
         } else {
-          // Se paziente preselezionato, resetta solo gli altri campi
           setFormData({
             paziente_id: pazientePreselezionato,
-            prestazione_id: "",
+            prestazioni: [{ prestazione_id: "", quantita: 1, descrizione_personalizzata: "" }],
             data_prestazione: new Date().toISOString().split('T')[0],
             metodo_pagamento: "",
             note: ""
           });
         }
-      } else {
-        console.error('FatturaForm: createFattura returned null');
       }
     } catch (error) {
       console.error('FatturaForm: Error in handleSubmit:', error);
@@ -134,7 +164,7 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -146,12 +176,12 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Selezione Paziente e Prestazione */}
+          {/* Selezione Paziente */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" />
-                Paziente e Prestazione
+                Paziente
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -172,22 +202,6 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="prestazione">Prestazione *</Label>
-                <Select value={formData.prestazione_id} onValueChange={(value) => setFormData({...formData, prestazione_id: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona prestazione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {prestazioni.map((prestazione) => (
-                      <SelectItem key={prestazione.id} value={prestazione.id}>
-                        {prestazione.nome} - €{Number(prestazione.prezzo_unitario).toFixed(2)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="data_prestazione">Data Prestazione *</Label>
                 <Input
                   id="data_prestazione"
@@ -200,25 +214,105 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
             </CardContent>
           </Card>
 
+          {/* Prestazioni */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calculator className="h-5 w-5 text-primary" />
+                Prestazioni
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.prestazioni.map((riga, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">Prestazione {index + 1}</h4>
+                    {formData.prestazioni.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => rimuoviPrestazione(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Prestazione *</Label>
+                      <Select 
+                        value={riga.prestazione_id} 
+                        onValueChange={(value) => aggiornaPrestazione(index, 'prestazione_id', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleziona prestazione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {prestazioni.map((prestazione) => (
+                            <SelectItem key={prestazione.id} value={prestazione.id}>
+                              {prestazione.nome} - €{Number(prestazione.prezzo_unitario).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Quantità</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={riga.quantita}
+                        onChange={(e) => aggiornaPrestazione(index, 'quantita', parseInt(e.target.value) || 1)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Descrizione personalizzata (opzionale)</Label>
+                    <Textarea
+                      value={riga.descrizione_personalizzata || ""}
+                      onChange={(e) => aggiornaPrestazione(index, 'descrizione_personalizzata', e.target.value)}
+                      placeholder="Descrizione specifica per questa prestazione"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              ))}
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={aggiungiPrestazione}
+                className="w-full"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Aggiungi Prestazione
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Dettagli Economici */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calculator className="h-5 w-5 text-primary" />
-                Dettagli Economici
+                Riepilogo Economico
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Importo Base</Label>
+                  <Label>Totale Prestazioni</Label>
                   <div className="p-3 bg-muted rounded-lg">
-                    <span className="text-lg font-semibold">€ {importoBase.toFixed(2)}</span>
+                    <span className="text-lg font-semibold">€ {totaleDettagliato.imponibile.toFixed(2)}</span>
                     <p className="text-xs text-muted-foreground">IVA Esente (Art. 10 n. 18 DPR 633/72)</p>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>ENPAP (2%)</Label>
+                  <Label>ENPAP ({percentualeEnpap}%)</Label>
                   <div className="p-3 bg-muted rounded-lg">
                     <span className="text-lg font-semibold">€ {importoEnpap.toFixed(2)}</span>
                     <p className="text-xs text-muted-foreground">
@@ -276,7 +370,7 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
               <div className="text-sm space-y-1">
                 <p><strong>Normativa Applicata:</strong></p>
                 <p>• IVA Esente: Art. 10 n. 18 DPR 633/72</p>
-                <p>• Contributo ENPAP: 2% come da normativa vigente</p>
+                <p>• Contributo ENPAP: {percentualeEnpap}% come da normativa vigente</p>
                 <p>• GDPR: Trattamento dati sanitari ex art. 9 Reg. UE 679/2016</p>
               </div>
             </CardContent>

@@ -15,9 +15,15 @@ interface FatturaDettagliata extends Fattura {
   righe_fattura?: (RigaFattura & { prestazione?: Prestazione | any })[];
 }
 
+interface PrestazioneRiga {
+  prestazione_id: string;
+  quantita: number;
+  descrizione_personalizzata?: string;
+}
+
 interface FatturaFormData {
   paziente_id: string;
-  prestazione_id: string;
+  prestazioni: PrestazioneRiga[];
   data_prestazione: string;
   metodo_pagamento: string;
   note?: string;
@@ -143,9 +149,10 @@ export function useFatture() {
     if (!user) return null;
 
     try {
-      const prestazione = prestazioni.find(p => p.id === fatturaData.prestazione_id);
-      if (!prestazione) {
-        throw new Error('Prestazione non trovata');
+      // Valida che ci siano prestazioni valide
+      const prestazioniValide = fatturaData.prestazioni.filter(p => p.prestazione_id);
+      if (prestazioniValide.length === 0) {
+        throw new Error('Aggiungi almeno una prestazione');
       }
 
       // Ottieni dati profilo per calcoli fiscali
@@ -160,12 +167,20 @@ export function useFatture() {
       }
 
       const numeroFattura = await generateNumeroFattura();
-      const importoBase = Number(prestazione.prezzo_unitario);
 
-      // Calcola componenti fiscali
+      // Calcola totali di tutte le prestazioni
+      let importoTotalePrestazioni = 0;
+      for (const riga of prestazioniValide) {
+        const prestazione = prestazioni.find(p => p.id === riga.prestazione_id);
+        if (prestazione) {
+          importoTotalePrestazioni += Number(prestazione.prezzo_unitario) * riga.quantita;
+        }
+      }
+
+      // Calcola componenti fiscali sul totale
       const fiscalData: FiscalData = {
         regime_fiscale: (profile as any).regime_fiscale || 'RF19',
-        importo_prestazione: importoBase,
+        importo_prestazione: importoTotalePrestazioni,
         percentuale_enpap: (profile as any).percentuale_enpap || 2,
         enpap_a_paziente: (profile as any).enpap_a_paziente ?? true
       };
@@ -193,19 +208,28 @@ export function useFatture() {
 
       if (fatturaError) throw fatturaError;
 
-      // Crea la riga fattura per la prestazione
-      const { error: rigaError } = await supabase
-        .from('righe_fattura')
-        .insert({
-          fattura_id: fattura.id,
-          prestazione_id: prestazione.id,
-          descrizione: `${prestazione.nome} - ${fatturaData.data_prestazione}`,
-          quantita: 1,
-          prezzo_unitario: importoBase,
-          totale: importoBase
-        });
+      // Crea le righe fattura per tutte le prestazioni
+      for (const riga of prestazioniValide) {
+        const prestazione = prestazioni.find(p => p.id === riga.prestazione_id);
+        if (prestazione) {
+          const importoRiga = Number(prestazione.prezzo_unitario) * riga.quantita;
+          const descrizione = riga.descrizione_personalizzata || 
+            `${prestazione.nome}${riga.quantita > 1 ? ` (x${riga.quantita})` : ''} - ${fatturaData.data_prestazione}`;
+          
+          const { error: rigaError } = await supabase
+            .from('righe_fattura')
+            .insert({
+              fattura_id: fattura.id,
+              prestazione_id: prestazione.id,
+              descrizione: descrizione,
+              quantita: riga.quantita,
+              prezzo_unitario: Number(prestazione.prezzo_unitario),
+              totale: importoRiga
+            });
 
-      if (rigaError) throw rigaError;
+          if (rigaError) throw rigaError;
+        }
+      }
 
       // Aggiungi riga ENPAP se addebitata al paziente
       if (calcoli.enpap > 0) {
