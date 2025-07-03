@@ -43,6 +43,18 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
   const prestazioneSelezionata = prestazioni.find(p => p.id === formData.prestazione_id);
   const pazienteSelezionato = pazienti.find(p => p.id === formData.paziente_id);
 
+  // Auto-seleziona prestazione default quando si cambia paziente
+  const handlePazienteChange = (pazienteId: string) => {
+    const paziente = pazienti.find(p => p.id === pazienteId);
+    const prestazioneDefault = (paziente as any)?.prestazione_default_id;
+    
+    setFormData({
+      ...formData, 
+      paziente_id: pazienteId,
+      prestazione_id: prestazioneDefault || formData.prestazione_id
+    });
+  };
+
   // Calcoli automatici
   const importoBase = prestazioneSelezionata?.prezzo_unitario ? Number(prestazioneSelezionata.prezzo_unitario) : 0;
   const importoEnpap = importoBase * 2 / 100; // ENPAP 2%
@@ -145,7 +157,7 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="paziente">Paziente *</Label>
-                <Select value={formData.paziente_id} onValueChange={(value) => setFormData({...formData, paziente_id: value})}>
+                <Select value={formData.paziente_id} onValueChange={handlePazienteChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona paziente" />
                   </SelectTrigger>

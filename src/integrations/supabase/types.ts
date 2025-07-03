@@ -81,6 +81,7 @@ export type Database = {
           indirizzo: string | null
           nome: string
           note: string | null
+          prestazione_default_id: string | null
           telefono: string | null
           updated_at: string
           user_id: string
@@ -97,6 +98,7 @@ export type Database = {
           indirizzo?: string | null
           nome: string
           note?: string | null
+          prestazione_default_id?: string | null
           telefono?: string | null
           updated_at?: string
           user_id: string
@@ -113,11 +115,20 @@ export type Database = {
           indirizzo?: string | null
           nome?: string
           note?: string | null
+          prestazione_default_id?: string | null
           telefono?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pazienti_prestazione_default_id_fkey"
+            columns: ["prestazione_default_id"]
+            isOneToOne: false
+            referencedRelation: "prestazioni"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prestazioni: {
         Row: {

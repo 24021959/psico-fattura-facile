@@ -1,4 +1,4 @@
-import { Euro, Users, FileText, TrendingUp, Calendar, Clock, CheckCircle } from "lucide-react";
+import { Euro, Users, FileText, TrendingUp, Calendar, Clock, CheckCircle, Plus } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

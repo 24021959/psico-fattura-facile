@@ -5,9 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Save, X } from "lucide-react";
+import { Plus, Save, X, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePazienti } from "@/hooks/usePazienti";
+import { usePrestazioni } from "@/hooks/usePrestazioni";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Paziente = Tables<'pazienti'>;
@@ -29,9 +31,11 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
     citta: paziente?.citta || "",
     cap: paziente?.cap || "",
     data_nascita: paziente?.data_nascita || "",
-    note: paziente?.note || ""
+    note: paziente?.note || "",
+    prestazione_default_id: (paziente as any)?.prestazione_default_id || ""
   });
   const { createPaziente, updatePaziente } = usePazienti();
+  const { prestazioni } = usePrestazioni();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,7 +82,8 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
           citta: "",
           cap: "",
           data_nascita: "",
-          note: ""
+          note: "",
+          prestazione_default_id: ""
         });
       }
     } catch (error) {
@@ -225,6 +230,40 @@ export function PazienteForm({ paziente, trigger }: PazienteFormProps) {
                     maxLength={5}
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Prestazione Default */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                Prestazione Default
+              </CardTitle>
+              <CardDescription>
+                Imposta la prestazione predefinita per questo paziente (opzionale)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="prestazione_default">Prestazione predefinita</Label>
+                <Select value={formData.prestazione_default_id} onValueChange={(value) => setFormData({...formData, prestazione_default_id: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Nessuna prestazione predefinita" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nessuna prestazione predefinita</SelectItem>
+                    {prestazioni.filter(p => p.attiva).map((prestazione) => (
+                      <SelectItem key={prestazione.id} value={prestazione.id}>
+                        {prestazione.nome} - €{Number(prestazione.prezzo_unitario).toFixed(2)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Quando crei una fattura per questo paziente, questa prestazione sarà preselezionata
+                </p>
               </div>
             </CardContent>
           </Card>
