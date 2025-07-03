@@ -8,6 +8,8 @@ import { AdminInvoices } from './AdminInvoices';
 import { AdminSupport } from './AdminSupport';
 import { AdminSettings } from './AdminSettings';
 import { AdminAuditLog } from './AdminAuditLog';
+import { AdminDiscountCodes } from './AdminDiscountCodes';
+import { AdminSystemSettings } from './AdminSystemSettings';
 
 interface AdminDashboardProps {
   userRole: string | null;
@@ -32,6 +34,10 @@ export function AdminDashboard({ userRole }: AdminDashboardProps) {
         return <AdminSupport userRole={userRole} />;
       case 'settings':
         return <AdminSettings userRole={userRole} />;
+      case 'discount-codes':
+        return <AdminDiscountCodes userRole={userRole} />;
+      case 'system-settings':
+        return <AdminSystemSettings userRole={userRole} />;
       case 'audit':
         return <AdminAuditLog userRole={userRole} />;
       default:

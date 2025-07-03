@@ -11,7 +11,8 @@ import {
   Settings, 
   LogOut,
   Activity,
-  Home
+  Home,
+  BadgePercent
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -67,10 +68,16 @@ export function AdminSidebar({ activeSection, onSectionChange, userRole }: Admin
       roles: ['super_admin', 'admin', 'support']
     },
     {
-      id: 'settings',
-      label: 'Impostazioni',
+      id: 'discount-codes',
+      label: 'Codici Sconto',
+      icon: BadgePercent,
+      roles: ['super_admin', 'admin', 'marketing']
+    },
+    {
+      id: 'system-settings',
+      label: 'Sistema',
       icon: Settings,
-      roles: ['super_admin', 'admin']
+      roles: ['super_admin']
     },
     {
       id: 'audit',
