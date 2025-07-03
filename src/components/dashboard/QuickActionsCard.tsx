@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, FileText, Users, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FatturaForm } from "@/components/forms/FatturaForm";
+import { PazienteForm } from "@/components/forms/PazienteForm";
 
 export function QuickActionsCard() {
   const navigate = useNavigate();
@@ -25,15 +26,12 @@ export function QuickActionsCard() {
             Crea Nuova Fattura
           </Button>
         } />
-        <Button 
-          variant="outline" 
-          className="w-full justify-start" 
-          size="lg"
-          onClick={() => navigate('/pazienti')}
-        >
-          <Users className="mr-2 h-5 w-5" />
-          Inserisci Nuovo Paziente
-        </Button>
+        <PazienteForm trigger={
+          <Button variant="outline" className="w-full justify-start" size="lg">
+            <Users className="mr-2 h-5 w-5" />
+            Inserisci Nuovo Paziente
+          </Button>
+        } />
         <Button 
           variant="outline" 
           className="w-full justify-start" 

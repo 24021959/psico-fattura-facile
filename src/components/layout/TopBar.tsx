@@ -38,13 +38,6 @@ export function TopBar() {
 
         {/* Right section */}
         <div className="flex items-center gap-2">
-          {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full text-xs flex items-center justify-center text-destructive-foreground">
-              3
-            </span>
-          </Button>
 
           {/* User Menu */}
           <DropdownMenu>
@@ -73,13 +66,6 @@ export function TopBar() {
               <DropdownMenuItem onClick={() => navigate('/impostazioni')}>
                 <User className="mr-2 h-4 w-4" />
                 Profilo e Impostazioni
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell className="mr-2 h-4 w-4" />
-                Notifiche
-                <span className="ml-auto text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
-                  3
-                </span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
