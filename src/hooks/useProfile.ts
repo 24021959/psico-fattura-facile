@@ -80,6 +80,8 @@ export function useProfile() {
           cap: profileData.cap || null,
           numero_iscrizione_albo: profileData.numero_iscrizione_albo || null,
           logo_url: profileData.logo_url || null,
+        }, {
+          onConflict: 'user_id'
         })
         .select()
         .single();
