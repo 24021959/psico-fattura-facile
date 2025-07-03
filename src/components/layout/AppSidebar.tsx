@@ -32,6 +32,7 @@ const mainItems = [
   { title: "Diario Terapeutico", url: "/diario-clinico", icon: Notebook },
   { title: "Fatture", url: "/fatture", icon: FileText },
   { title: "Prestazioni", url: "/prestazioni", icon: Activity },
+  { title: "Supporto", url: "/support", icon: Heart },
 ];
 
 const analyticsItems = [
