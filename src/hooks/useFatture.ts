@@ -148,11 +148,29 @@ export function useFatture() {
         throw new Error('Prestazione non trovata');
       }
 
+      // Ottieni dati profilo per calcoli fiscali
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) {
+        throw new Error('Profilo professionista non configurato. Configura i tuoi dati nelle Impostazioni.');
+      }
+
       const numeroFattura = await generateNumeroFattura();
       const importoBase = Number(prestazione.prezzo_unitario);
-      const enpapPercentuale = 2; // ENPAP standard 2%
-      const enpapImporto = importoBase * enpapPercentuale / 100;
-      const totale = importoBase + enpapImporto;
+
+      // Calcola componenti fiscali
+      const fiscalData: FiscalData = {
+        regime_fiscale: (profile as any).regime_fiscale || 'RF19',
+        importo_prestazione: importoBase,
+        percentuale_enpap: (profile as any).percentuale_enpap || 2,
+        enpap_a_paziente: (profile as any).enpap_a_paziente ?? true
+      };
+
+      const calcoli = calcolaComponentiFiscali(fiscalData);
 
       // Crea la fattura
       const { data: fattura, error: fatturaError } = await supabase
@@ -164,10 +182,10 @@ export function useFatture() {
           data_fattura: fatturaData.data_prestazione,
           data_scadenza: null,
           stato: 'inviata',
-          subtotale: importoBase,
-          iva_percentuale: 0, // IVA esente
+          subtotale: calcoli.imponibile,
+          iva_percentuale: 0, // IVA esente per prestazioni sanitarie
           iva_importo: 0,
-          totale: totale,
+          totale: calcoli.totale,
           note: fatturaData.note || null
         })
         .select()
@@ -175,7 +193,7 @@ export function useFatture() {
 
       if (fatturaError) throw fatturaError;
 
-      // Crea la riga fattura
+      // Crea la riga fattura per la prestazione
       const { error: rigaError } = await supabase
         .from('righe_fattura')
         .insert({
@@ -188,6 +206,38 @@ export function useFatture() {
         });
 
       if (rigaError) throw rigaError;
+
+      // Aggiungi riga ENPAP se addebitata al paziente
+      if (calcoli.enpap > 0) {
+        const { error: enpapError } = await supabase
+          .from('righe_fattura')
+          .insert({
+            fattura_id: fattura.id,
+            prestazione_id: null,
+            descrizione: `Contributo ENPAP ${fiscalData.percentuale_enpap}%`,
+            quantita: 1,
+            prezzo_unitario: calcoli.enpap,
+            totale: calcoli.enpap
+          });
+
+        if (enpapError) throw enpapError;
+      }
+
+      // Aggiungi riga bollo se applicabile
+      if (calcoli.bollo > 0) {
+        const { error: bolloError } = await supabase
+          .from('righe_fattura')
+          .insert({
+            fattura_id: fattura.id,
+            prestazione_id: null,
+            descrizione: 'Imposta di bollo',
+            quantita: 1,
+            prezzo_unitario: calcoli.bollo,
+            totale: calcoli.bollo
+          });
+
+        if (bolloError) throw bolloError;
+      }
 
       // Aggiorna la lista delle fatture
       await fetchFatture();
