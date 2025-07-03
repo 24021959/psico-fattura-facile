@@ -11,7 +11,7 @@ export function RecentActivityCard() {
   const ultimeFatture = fatture.slice(0, 4);
 
   return (
-    <Card className="shadow-medical">
+    <Card className="shadow-medical bg-pastel-green-light border-pastel-green">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />

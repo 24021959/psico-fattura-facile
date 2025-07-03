@@ -27,13 +27,13 @@ export function StatsCard({
   const getVariantStyles = () => {
     switch (variant) {
       case "primary":
-        return "border-primary/20 bg-primary/5";
+        return "border-pastel-blue bg-pastel-blue-light";
       case "success":
-        return "border-success/20 bg-success/5";
+        return "border-pastel-green bg-pastel-green-light";
       case "warning":
-        return "border-warning/20 bg-warning/5";
+        return "border-pastel-orange bg-pastel-orange-light";
       default:
-        return "";
+        return "border-pastel-purple bg-pastel-purple-light";
     }
   };
 

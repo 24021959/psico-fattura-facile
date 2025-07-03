@@ -9,7 +9,7 @@ export function QuickActionsCard() {
   const navigate = useNavigate();
 
   return (
-    <Card className="shadow-medical">
+    <Card className="shadow-medical bg-pastel-yellow-light border-pastel-yellow">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />

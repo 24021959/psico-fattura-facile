@@ -29,14 +29,14 @@ export function PlanStatusCard() {
   };
 
   const getPlanColor = () => {
-    if (userSubscription.plan_name === 'PRO') return 'from-amber-50 to-orange-50 border-amber-200';
-    if (userSubscription.plan_name === 'STANDARD') return 'from-blue-50 to-blue-50 border-blue-200';
-    return 'from-muted/20 to-muted/20 border-border';
+    if (userSubscription.plan_name === 'PRO') return 'bg-pastel-yellow-light border-pastel-yellow';
+    if (userSubscription.plan_name === 'STANDARD') return 'bg-pastel-blue-light border-pastel-blue';
+    return 'bg-pastel-purple-light border-pastel-purple';
   };
 
   return (
     <>
-      <Card className={`bg-gradient-to-r ${getPlanColor()}`}>
+      <Card className={`shadow-medical ${getPlanColor()}`}>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

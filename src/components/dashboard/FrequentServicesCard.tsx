@@ -6,7 +6,7 @@ export function FrequentServicesCard() {
   const { prestazioni } = usePrestazioni();
 
   return (
-    <Card className="shadow-medical">
+    <Card className="shadow-medical bg-pastel-pink-light border-pastel-pink">
       <CardHeader>
         <CardTitle>Prestazioni Più Frequenti</CardTitle>
         <CardDescription>

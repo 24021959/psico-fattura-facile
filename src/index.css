@@ -59,11 +59,25 @@ All colors MUST be HSL. Semantic tokens for consistent theming.
     --input: 210 14% 89%;
     --ring: 211 100% 50%;
 
-    /* Medical specialty colors */
-    --psychology: 270 50% 40%;
+    /* Medical specialty colors - Pastels */
+    --psychology: 270 50% 75%;
     --psychology-light: 270 50% 95%;
-    --therapy: 195 100% 40%;
-    --therapy-light: 195 100% 95%;
+    --therapy: 195 70% 75%;
+    --therapy-light: 195 70% 95%;
+
+    /* Pastel color palette */
+    --pastel-pink: 320 60% 85%;
+    --pastel-pink-light: 320 60% 95%;
+    --pastel-blue: 210 60% 85%;
+    --pastel-blue-light: 210 60% 95%;
+    --pastel-green: 140 50% 85%;
+    --pastel-green-light: 140 50% 95%;
+    --pastel-purple: 280 50% 85%;
+    --pastel-purple-light: 280 50% 95%;
+    --pastel-orange: 30 70% 85%;
+    --pastel-orange-light: 30 70% 95%;
+    --pastel-yellow: 50 70% 85%;
+    --pastel-yellow-light: 50 70% 95%;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(215 25% 27% / 0.05);

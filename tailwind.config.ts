@@ -69,6 +69,20 @@ export default {
 					DEFAULT: 'hsl(var(--therapy))',
 					light: 'hsl(var(--therapy-light))'
 				},
+				pastel: {
+					pink: 'hsl(var(--pastel-pink))',
+					'pink-light': 'hsl(var(--pastel-pink-light))',
+					blue: 'hsl(var(--pastel-blue))',
+					'blue-light': 'hsl(var(--pastel-blue-light))',
+					green: 'hsl(var(--pastel-green))',
+					'green-light': 'hsl(var(--pastel-green-light))',
+					purple: 'hsl(var(--pastel-purple))',
+					'purple-light': 'hsl(var(--pastel-purple-light))',
+					orange: 'hsl(var(--pastel-orange))',
+					'orange-light': 'hsl(var(--pastel-orange-light))',
+					yellow: 'hsl(var(--pastel-yellow))',
+					'yellow-light': 'hsl(var(--pastel-yellow-light))'
+				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
