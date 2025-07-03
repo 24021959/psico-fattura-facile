@@ -16,6 +16,8 @@ interface ProfileFormData {
   indirizzo?: string;
   citta?: string;
   cap?: string;
+  numero_iscrizione_albo?: string;
+  logo_url?: string;
 }
 
 export function useProfile() {
@@ -74,6 +76,8 @@ export function useProfile() {
           indirizzo: profileData.indirizzo || null,
           citta: profileData.citta || null,
           cap: profileData.cap || null,
+          numero_iscrizione_albo: profileData.numero_iscrizione_albo || null,
+          logo_url: profileData.logo_url || null,
         })
         .select()
         .single();

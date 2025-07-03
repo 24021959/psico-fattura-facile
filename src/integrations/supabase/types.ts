@@ -165,7 +165,9 @@ export type Database = {
           email: string
           id: string
           indirizzo: string | null
+          logo_url: string | null
           nome: string
+          numero_iscrizione_albo: string | null
           partita_iva: string | null
           telefono: string | null
           updated_at: string
@@ -180,7 +182,9 @@ export type Database = {
           email: string
           id?: string
           indirizzo?: string | null
+          logo_url?: string | null
           nome: string
+          numero_iscrizione_albo?: string | null
           partita_iva?: string | null
           telefono?: string | null
           updated_at?: string
@@ -195,7 +199,9 @@ export type Database = {
           email?: string
           id?: string
           indirizzo?: string | null
+          logo_url?: string | null
           nome?: string
+          numero_iscrizione_albo?: string | null
           partita_iva?: string | null
           telefono?: string | null
           updated_at?: string
