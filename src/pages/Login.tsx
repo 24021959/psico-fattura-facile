@@ -49,7 +49,11 @@ export default function Login() {
     }
     const result = await login(loginData.email, loginData.password);
     if (!result.success) {
-      setError(result.error || "Errore durante l'accesso");
+      if (result.error?.includes("Email not confirmed")) {
+        setError("Devi confermare la tua email prima di accedere. Controlla la tua casella di posta (anche spam) e clicca sul link di verifica.");
+      } else {
+        setError(result.error || "Errore durante l'accesso");
+      }
     }
   };
   const handleRegister = async (e: React.FormEvent) => {
