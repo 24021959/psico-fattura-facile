@@ -198,11 +198,11 @@ export function useFatture() {
       
       return fattura;
     } catch (error) {
-      console.error('Error creating fattura:', error);
+      console.error('createFattura: Error:', error);
       toast({
         variant: "destructive",
         title: "Errore",
-        description: "Errore nella creazione della fattura"
+        description: `Errore nella creazione della fattura: ${error.message || 'Errore sconosciuto'}`
       });
       return null;
     }

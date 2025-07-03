@@ -51,7 +51,16 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('FatturaForm: Starting submit with data:', formData);
+    console.log('FatturaForm: Available pazienti:', pazienti.length);
+    console.log('FatturaForm: Available prestazioni:', prestazioni.length);
+    
     if (!formData.paziente_id || !formData.prestazione_id || !formData.metodo_pagamento) {
+      console.error('FatturaForm: Missing required fields', {
+        paziente_id: formData.paziente_id,
+        prestazione_id: formData.prestazione_id,
+        metodo_pagamento: formData.metodo_pagamento
+      });
       toast({
         variant: "destructive",
         title: "Errore",
@@ -61,7 +70,8 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
     }
 
     try {
-      await createFattura({
+      console.log('FatturaForm: Calling createFattura...');
+      const result = await createFattura({
         paziente_id: formData.paziente_id,
         prestazione_id: formData.prestazione_id,
         data_prestazione: formData.data_prestazione,
@@ -69,30 +79,36 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
         note: formData.note || undefined
       });
 
+      console.log('FatturaForm: createFattura result:', result);
       
-      setOpen(false);
-      
-      // Reset form
-      if (!pazientePreselezionato) {
-        setFormData({
-          paziente_id: "",
-          prestazione_id: "",
-          data_prestazione: new Date().toISOString().split('T')[0],
-          metodo_pagamento: "",
-          note: ""
-        });
+      if (result) {
+        console.log('FatturaForm: Success - closing dialog and resetting form');
+        setOpen(false);
+        
+        // Reset form
+        if (!pazientePreselezionato) {
+          setFormData({
+            paziente_id: "",
+            prestazione_id: "",
+            data_prestazione: new Date().toISOString().split('T')[0],
+            metodo_pagamento: "",
+            note: ""
+          });
+        } else {
+          // Se paziente preselezionato, resetta solo gli altri campi
+          setFormData({
+            paziente_id: pazientePreselezionato,
+            prestazione_id: "",
+            data_prestazione: new Date().toISOString().split('T')[0],
+            metodo_pagamento: "",
+            note: ""
+          });
+        }
       } else {
-        // Se paziente preselezionato, resetta solo gli altri campi
-        setFormData({
-          paziente_id: pazientePreselezionato,
-          prestazione_id: "",
-          data_prestazione: new Date().toISOString().split('T')[0],
-          metodo_pagamento: "",
-          note: ""
-        });
+        console.error('FatturaForm: createFattura returned null');
       }
     } catch (error) {
-      console.error('Error creating fattura:', error);
+      console.error('FatturaForm: Error in handleSubmit:', error);
     }
   };
 
