@@ -24,28 +24,22 @@ export default function Dashboard() {
   const {
     prestazioni
   } = usePrestazioni();
-  const { profile } = useProfile();
+  const {
+    profile
+  } = useProfile();
 
   // Funzione per determinare il genere dal nome
   const getGenderFromName = (nome: string): 'M' | 'F' => {
-    const femaleNames = [
-      'alessandra', 'anna', 'barbara', 'carla', 'chiara', 'cristina', 'elena', 'francesca', 
-      'giulia', 'laura', 'maria', 'monica', 'paola', 'roberta', 'sara', 'silvia', 'valentina',
-      'federica', 'giovanna', 'lucia', 'emanuela', 'lorena', 'daniela', 'claudia', 'veronica',
-      'sabrina', 'antonella', 'patrizia', 'manuela', 'elisa', 'raffaella', 'teresa', 'grazia',
-      'caterina', 'elisabetta', 'rosa', 'angela', 'franca', 'rita', 'donatella', 'simona'
-    ];
+    const femaleNames = ['alessandra', 'anna', 'barbara', 'carla', 'chiara', 'cristina', 'elena', 'francesca', 'giulia', 'laura', 'maria', 'monica', 'paola', 'roberta', 'sara', 'silvia', 'valentina', 'federica', 'giovanna', 'lucia', 'emanuela', 'lorena', 'daniela', 'claudia', 'veronica', 'sabrina', 'antonella', 'patrizia', 'manuela', 'elisa', 'raffaella', 'teresa', 'grazia', 'caterina', 'elisabetta', 'rosa', 'angela', 'franca', 'rita', 'donatella', 'simona'];
     return femaleNames.includes(nome.toLowerCase()) ? 'F' : 'M';
   };
 
   // Genera messaggio di benvenuto personalizzato
   const getWelcomeMessage = () => {
     if (!profile?.nome) return "Benvenuto nel tuo gestionale sanitario";
-    
     const gender = getGenderFromName(profile.nome);
     const title = gender === 'F' ? 'Dott.ssa' : 'Dott.';
     const welcome = gender === 'F' ? 'Benvenuta' : 'Benvenuto';
-    
     return `${welcome} ${title} ${profile.nome}`;
   };
 
@@ -66,9 +60,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
-            {getWelcomeMessage()}
-          </p>
+          
         </div>
         <div className="flex gap-3">
           <FatturaForm trigger={<Button size="lg" className="medical-gradient text-primary-foreground hover:opacity-90">
