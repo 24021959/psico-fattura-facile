@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Pazienti", url: "/pazienti", icon: Users },
   { title: "Diario Terapeutico", url: "/diario-clinico", icon: Notebook },
   { title: "Fatture", url: "/fatture", icon: FileText },
@@ -51,7 +51,6 @@ export function AppSidebar() {
   const currentPath = location.pathname;
 
   const isActive = (path: string) => {
-    if (path === "/dashboard") return currentPath === "/" || currentPath === "/dashboard";
     if (path === "/") return currentPath === "/";
     return currentPath.startsWith(path);
   };

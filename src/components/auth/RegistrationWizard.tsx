@@ -104,7 +104,7 @@ export function RegistrationWizard({
           title: "Registrazione completata!",
           description: "Controlla la tua email per verificare l'account. Piano FREE attivato."
         });
-        navigate("/dashboard");
+        navigate("/");
         return;
       }
 
@@ -115,7 +115,7 @@ export function RegistrationWizard({
           title: "Registrazione completata!",
           description: "Completa il pagamento per attivare il piano scelto. Controlla anche la tua email per verificare l'account."
         });
-        navigate("/dashboard");
+        navigate("/");
       } catch (error) {
         // Se il checkout fallisce, l'utente è comunque registrato con piano FREE
         toast({
@@ -123,7 +123,7 @@ export function RegistrationWizard({
           description: "Errore nel pagamento. Account creato con piano FREE. Controlla la tua email per verificare l'account.",
           variant: "destructive"
         });
-        navigate("/dashboard");
+        navigate("/");
       }
     } catch (error: any) {
       setError(error.message || "Errore durante la registrazione");

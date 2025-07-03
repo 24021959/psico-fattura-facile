@@ -73,7 +73,7 @@ export function DiarioClinico() {
         {/* Header */}
         <div className="flex flex-col space-y-4">
           <div className="flex items-center gap-4">
-            <Link to="/dashboard">
+            <Link to="/">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Dashboard
