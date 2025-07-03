@@ -64,14 +64,7 @@ export function PlanStatusCard() {
             </div>
 
             <div className="flex items-center gap-2">
-              {isFreePlan ? (
-                <Button
-                  onClick={() => setShowChangePlan(true)}
-                  className="medical-gradient text-primary-foreground"
-                >
-                  Aggiorna Piano
-                </Button>
-              ) : (
+              {!isFreePlan && (
                 <Button
                   variant="outline"
                   onClick={createCustomerPortalSession}
