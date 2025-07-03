@@ -254,15 +254,14 @@ export default function Fatture() {
                           </SelectContent>
                         </Select>
                       )}
-                      <Button variant="outline" size="sm">
-                        <Eye className="mr-1 h-3 w-3" />
-                        Visualizza
-                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => {
+                          console.log('Visualizza fattura clicked:', fattura);
+                          // Per ora stesso comportamento del PDF, in futuro potrebbe aprire una modal
                           import('../utils/fatturaPDF').then(({ generaEScaricaPDF }) => {
+                            console.log('PDF module loaded, preparing data...');
                             // Prepara i dati per il PDF
                             const fatturaPerPDF = {
                               id: fattura.numero_fattura,
@@ -283,7 +282,51 @@ export default function Fatture() {
                               stato: fattura.stato,
                               metodoPagamento: 'Non specificato'
                             };
-                            generaEScaricaPDF(fatturaPerPDF);
+                            console.log('Calling generaEScaricaPDF with data:', fatturaPerPDF);
+                            generaEScaricaPDF(fatturaPerPDF).catch(error => {
+                              console.error('Error generating PDF:', error);
+                            });
+                          }).catch(error => {
+                            console.error('Error loading PDF module:', error);
+                          });
+                        }}
+                      >
+                        <Eye className="mr-1 h-3 w-3" />
+                        Visualizza
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          console.log('Download PDF clicked:', fattura);
+                          import('../utils/fatturaPDF').then(({ generaEScaricaPDF }) => {
+                            console.log('PDF module loaded for download, preparing data...');
+                            // Prepara i dati per il PDF
+                            const fatturaPerPDF = {
+                              id: fattura.numero_fattura,
+                              numero: fattura.numero_fattura.split('-')[1],
+                              anno: fattura.numero_fattura.split('-')[0],
+                              data: fattura.data_fattura,
+                              paziente: {
+                                ...fattura.paziente,
+                                codiceFiscale: fattura.paziente?.codice_fiscale || ''
+                              },
+                              prestazione: fattura.righe_fattura?.[0]?.prestazione || {
+                                nome: fattura.righe_fattura?.[0]?.descrizione || '',
+                                codice: ''
+                              },
+                              importo: Number(fattura.subtotale),
+                              enpap: Number(fattura.totale) - Number(fattura.subtotale),
+                              totale: Number(fattura.totale),
+                              stato: fattura.stato,
+                              metodoPagamento: 'Non specificato'
+                            };
+                            console.log('Calling generaEScaricaPDF for download with data:', fatturaPerPDF);
+                            generaEScaricaPDF(fatturaPerPDF).catch(error => {
+                              console.error('Error generating PDF for download:', error);
+                            });
+                          }).catch(error => {
+                            console.error('Error loading PDF module for download:', error);
                           });
                         }}
                       >
