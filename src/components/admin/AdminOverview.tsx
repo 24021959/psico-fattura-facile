@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, CreditCard, FileText, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
+import { Users, CreditCard, FileText, AlertTriangle, Clock, RefreshCw, Database, Zap } from 'lucide-react';
 
 interface AdminOverviewProps {
   userRole: string | null;
@@ -12,9 +13,28 @@ interface StatsData {
   totalUsers: number;
   activeSubscriptions: number;
   totalInvoices: number;
-  monthlyRevenue: number;
   pendingTickets: number;
   newUsersThisMonth: number;
+}
+
+interface RecentActivity {
+  id: string;
+  action: string;
+  target_type: string | null;
+  target_id: string | null;
+  details: any;
+  created_at: string;
+  admin_users: {
+    profiles: {
+      nome: string;
+      cognome: string;
+    };
+  };
+}
+
+interface SystemStatus {
+  database: string;
+  lastChecked: string;
 }
 
 export function AdminOverview({ userRole }: AdminOverviewProps) {
@@ -22,64 +42,76 @@ export function AdminOverview({ userRole }: AdminOverviewProps) {
     totalUsers: 0,
     activeSubscriptions: 0,
     totalInvoices: 0,
-    monthlyRevenue: 0,
     pendingTickets: 0,
     newUsersThisMonth: 0
   });
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>({
+    database: 'checking',
+    lastChecked: new Date().toISOString()
+  });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchStats = async () => {
+  const fetchDashboardData = async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) {
+      setRefreshing(true);
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('get-admin-stats');
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data?.stats) {
+        setStats(data.stats);
+      }
+      
+      if (data?.recentActivity) {
+        setRecentActivity(data.recentActivity);
+      }
+      
+      if (data?.systemStatus) {
+        setSystemStatus(data.systemStatus);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Fallback to basic stats if edge function fails
       try {
-        // Get total users
-        const { count: totalUsers } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        // Get active subscriptions
-        const { count: activeSubscriptions } = await supabase
-          .from('user_subscriptions')
-          .select('*', { count: 'exact', head: true })
-          .neq('plan_name', 'FREE')
-          .eq('status', 'active');
-
-        // Get total invoices
-        const { count: totalInvoices } = await supabase
-          .from('fatture')
-          .select('*', { count: 'exact', head: true });
-
-        // Get pending support tickets
-        const { count: pendingTickets } = await supabase
-          .from('support_tickets')
-          .select('*', { count: 'exact', head: true })
-          .in('status', ['open', 'in_progress']);
-
-        // Get new users this month
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-
-        const { count: newUsersThisMonth } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', startOfMonth.toISOString());
+        const [
+          { count: totalUsers },
+          { count: activeSubscriptions },
+          { count: totalInvoices },
+          { count: pendingTickets }
+        ] = await Promise.all([
+          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          supabase.from('user_subscriptions').select('*', { count: 'exact', head: true })
+            .neq('plan_name', 'FREE').eq('status', 'active'),
+          supabase.from('fatture').select('*', { count: 'exact', head: true }),
+          supabase.from('support_tickets').select('*', { count: 'exact', head: true })
+            .in('status', ['open', 'in_progress'])
+        ]);
 
         setStats({
           totalUsers: totalUsers || 0,
           activeSubscriptions: activeSubscriptions || 0,
           totalInvoices: totalInvoices || 0,
-          monthlyRevenue: 0, // TODO: Calculate from Stripe data
           pendingTickets: pendingTickets || 0,
-          newUsersThisMonth: newUsersThisMonth || 0
+          newUsersThisMonth: 0
         });
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setLoading(false);
+      } catch (fallbackError) {
+        console.error('Error fetching fallback stats:', fallbackError);
       }
-    };
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-    fetchStats();
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
 
   const statCards = [
@@ -134,6 +166,25 @@ export function AdminOverview({ userRole }: AdminOverviewProps) {
     );
   }
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Appena ora';
+    if (diffInMinutes < 60) return `${diffInMinutes} min fa`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ore fa`;
+    return `${Math.floor(diffInMinutes / 1440)} giorni fa`;
+  };
+
+  const getActivityIcon = (action: string) => {
+    if (action.includes('login') || action.includes('user')) return 'bg-green-500';
+    if (action.includes('subscription') || action.includes('payment')) return 'bg-blue-500';
+    if (action.includes('ticket') || action.includes('support')) return 'bg-yellow-500';
+    if (action.includes('delete') || action.includes('error')) return 'bg-red-500';
+    return 'bg-gray-500';
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -144,10 +195,21 @@ export function AdminOverview({ userRole }: AdminOverviewProps) {
             Panoramica generale del sistema Psico Fattura Facile
           </p>
         </div>
-        <Badge variant="outline" className="px-3 py-1">
-          <Clock className="h-3 w-3 mr-1" />
-          {new Date().toLocaleDateString('it-IT')}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => fetchDashboardData(true)}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Aggiorna
+          </Button>
+          <Badge variant="outline" className="px-3 py-1">
+            <Clock className="h-3 w-3 mr-1" />
+            {new Date().toLocaleDateString('it-IT')}
+          </Badge>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -184,27 +246,29 @@ export function AdminOverview({ userRole }: AdminOverviewProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">Nuovo utente registrato</p>
-                  <p className="text-xs text-muted-foreground">2 ore fa</p>
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 ${getActivityIcon(activity.action)} rounded-full`}></div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium">
+                        {activity.action} 
+                        {activity.target_type && ` - ${activity.target_type}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.admin_users?.profiles ? 
+                          `${activity.admin_users.profiles.nome} ${activity.admin_users.profiles.cognome} • ` : ''
+                        }
+                        {formatTimeAgo(activity.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">Nessuna attività recente</p>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">Nuovo abbonamento Standard</p>
-                  <p className="text-xs text-muted-foreground">4 ore fa</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">Ticket supporto aperto</p>
-                  <p className="text-xs text-muted-foreground">6 ore fa</p>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -219,27 +283,33 @@ export function AdminOverview({ userRole }: AdminOverviewProps) {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Database</span>
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  Online
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  <span className="text-sm">Database</span>
+                </div>
+                <Badge 
+                  variant="outline" 
+                  className={systemStatus.database === 'online' 
+                    ? "text-green-600 border-green-600" 
+                    : "text-red-600 border-red-600"
+                  }
+                >
+                  {systemStatus.database === 'online' ? 'Online' : 'Offline'}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Stripe</span>
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  <span className="text-sm">Edge Functions</span>
+                </div>
                 <Badge variant="outline" className="text-green-600 border-green-600">
-                  Connesso
+                  Attive
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Email Service</span>
-                <Badge variant="outline" className="text-green-600 border-green-600">
-                  Attivo
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Backup</span>
+                <span className="text-sm">Ultimo Check</span>
                 <Badge variant="outline" className="text-blue-600 border-blue-600">
-                  Ultimo: oggi
+                  {formatTimeAgo(systemStatus.lastChecked)}
                 </Badge>
               </div>
             </div>
