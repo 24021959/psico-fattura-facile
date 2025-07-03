@@ -262,24 +262,34 @@ export default function Fatture() {
                           // Per ora stesso comportamento del PDF, in futuro potrebbe aprire una modal
                           import('../utils/fatturaPDF').then(({ generaEScaricaPDF }) => {
                             console.log('PDF module loaded, preparing data...');
-                            // Prepara i dati per il PDF
+                            console.log('Raw fattura data:', fattura);
+                            
+                            // Prepara i dati per il PDF con controlli di sicurezza
+                            const paziente = fattura.paziente || {};
+                            const rigaFattura = fattura.righe_fattura?.[0] || {};
+                            const prestazione = (rigaFattura as any)?.prestazione || {};
+                            
                             const fatturaPerPDF = {
-                              id: fattura.numero_fattura,
-                              numero: fattura.numero_fattura.split('-')[1],
-                              anno: fattura.numero_fattura.split('-')[0],
-                              data: fattura.data_fattura,
+                              id: fattura.numero_fattura || 'N/A',
+                              numero: fattura.numero_fattura?.split('-')?.[1] || '001',
+                              anno: fattura.numero_fattura?.split('-')?.[0] || new Date().getFullYear().toString(),
+                              data: fattura.data_fattura || new Date().toISOString().split('T')[0],
                               paziente: {
-                                ...fattura.paziente,
-                                codiceFiscale: fattura.paziente?.codice_fiscale || ''
+                                nome: (paziente as any)?.nome || 'Nome',
+                                cognome: (paziente as any)?.cognome || 'Cognome',
+                                codiceFiscale: (paziente as any)?.codice_fiscale || 'N/A',
+                                indirizzo: (paziente as any)?.indirizzo || '',
+                                citta: (paziente as any)?.citta || '',
+                                cap: (paziente as any)?.cap || ''
                               },
-                              prestazione: fattura.righe_fattura?.[0]?.prestazione || {
-                                nome: fattura.righe_fattura?.[0]?.descrizione || '',
-                                codice: ''
+                              prestazione: {
+                                nome: (prestazione as any)?.nome || (rigaFattura as any)?.descrizione || 'Prestazione',
+                                codice: 'PSI001'
                               },
-                              importo: Number(fattura.subtotale),
-                              enpap: Number(fattura.totale) - Number(fattura.subtotale),
-                              totale: Number(fattura.totale),
-                              stato: fattura.stato,
+                              importo: Number(fattura.subtotale) || 0,
+                              enpap: (Number(fattura.totale) || 0) - (Number(fattura.subtotale) || 0),
+                              totale: Number(fattura.totale) || 0,
+                              stato: fattura.stato || 'inviata',
                               metodoPagamento: 'Non specificato'
                             };
                             console.log('Calling generaEScaricaPDF with data:', fatturaPerPDF);
@@ -301,24 +311,33 @@ export default function Fatture() {
                           console.log('Download PDF clicked:', fattura);
                           import('../utils/fatturaPDF').then(({ generaEScaricaPDF }) => {
                             console.log('PDF module loaded for download, preparing data...');
-                            // Prepara i dati per il PDF
+                            
+                            // Prepara i dati per il PDF con controlli di sicurezza
+                            const paziente = fattura.paziente || {};
+                            const rigaFattura = fattura.righe_fattura?.[0] || {};
+                            const prestazione = (rigaFattura as any)?.prestazione || {};
+                            
                             const fatturaPerPDF = {
-                              id: fattura.numero_fattura,
-                              numero: fattura.numero_fattura.split('-')[1],
-                              anno: fattura.numero_fattura.split('-')[0],
-                              data: fattura.data_fattura,
+                              id: fattura.numero_fattura || 'N/A',
+                              numero: fattura.numero_fattura?.split('-')?.[1] || '001',
+                              anno: fattura.numero_fattura?.split('-')?.[0] || new Date().getFullYear().toString(),
+                              data: fattura.data_fattura || new Date().toISOString().split('T')[0],
                               paziente: {
-                                ...fattura.paziente,
-                                codiceFiscale: fattura.paziente?.codice_fiscale || ''
+                                nome: (paziente as any)?.nome || 'Nome',
+                                cognome: (paziente as any)?.cognome || 'Cognome',
+                                codiceFiscale: (paziente as any)?.codice_fiscale || 'N/A',
+                                indirizzo: (paziente as any)?.indirizzo || '',
+                                citta: (paziente as any)?.citta || '',
+                                cap: (paziente as any)?.cap || ''
                               },
-                              prestazione: fattura.righe_fattura?.[0]?.prestazione || {
-                                nome: fattura.righe_fattura?.[0]?.descrizione || '',
-                                codice: ''
+                              prestazione: {
+                                nome: (prestazione as any)?.nome || (rigaFattura as any)?.descrizione || 'Prestazione',
+                                codice: 'PSI001'
                               },
-                              importo: Number(fattura.subtotale),
-                              enpap: Number(fattura.totale) - Number(fattura.subtotale),
-                              totale: Number(fattura.totale),
-                              stato: fattura.stato,
+                              importo: Number(fattura.subtotale) || 0,
+                              enpap: (Number(fattura.totale) || 0) - (Number(fattura.subtotale) || 0),
+                              totale: Number(fattura.totale) || 0,
+                              stato: fattura.stato || 'inviata',
                               metodoPagamento: 'Non specificato'
                             };
                             console.log('Calling generaEScaricaPDF for download with data:', fatturaPerPDF);
