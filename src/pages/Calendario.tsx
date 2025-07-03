@@ -25,6 +25,7 @@ import { it } from "date-fns/locale";
 import { useFatture } from "@/hooks/useFatture";
 import { usePazienti } from "@/hooks/usePazienti";
 import { usePrestazioni } from "@/hooks/usePrestazioni";
+import { useEventiCalendario } from "@/hooks/useEventiCalendario";
 import { useToast } from "@/hooks/use-toast";
 
 interface CalendarEvent {
@@ -43,7 +44,6 @@ interface CalendarEvent {
 export default function Calendario() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [newEvent, setNewEvent] = useState<{
     title: string;
     time: string;
@@ -63,6 +63,7 @@ export default function Calendario() {
   const { fatture } = useFatture();
   const { pazienti } = usePazienti();
   const { prestazioni } = usePrestazioni();
+  const { eventi, createEvento, deleteEvento } = useEventiCalendario();
   const { toast } = useToast();
 
   // Genera eventi dalle scadenze fatture
@@ -83,8 +84,24 @@ export default function Calendario() {
       }));
   }, [fatture]);
 
+  // Converte eventi del database in CalendarEvent
+  const eventiCalendario: CalendarEvent[] = useMemo(() => {
+    return eventi.map(evento => ({
+      id: evento.id,
+      title: evento.titolo,
+      date: new Date(evento.data_evento + 'T00:00:00'),
+      time: evento.orario,
+      type: evento.tipo as 'appuntamento' | 'scadenza' | 'promemoria',
+      description: evento.descrizione || undefined,
+      patientId: evento.paziente_id || undefined,
+      serviceId: evento.prestazione_id || undefined,
+      invoiceId: evento.fattura_id || undefined,
+      status: evento.stato as 'programmato' | 'completato' | 'scaduto' | 'annullato'
+    }));
+  }, [eventi]);
+
   // Tutti gli eventi (manuali + automatici)
-  const allEvents = [...events, ...fattureEvents];
+  const allEvents = [...eventiCalendario, ...fattureEvents];
 
   // Eventi del giorno selezionato
   const selectedDayEvents = allEvents.filter(event => 
@@ -99,7 +116,7 @@ export default function Calendario() {
     return eventDate >= today && eventDate <= oneWeekFromNow;
   }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!newEvent.title || !newEvent.time) {
       toast({
         title: "Errore",
@@ -109,33 +126,27 @@ export default function Calendario() {
       return;
     }
 
-    const event: CalendarEvent = {
-      id: `manual-${Date.now()}`,
-      title: newEvent.title,
-      date: selectedDate,
-      time: newEvent.time,
-      type: newEvent.type,
-      description: newEvent.description,
-      patientId: newEvent.patientId || undefined,
-      serviceId: newEvent.serviceId || undefined,
-      status: 'programmato'
-    };
-
-    setEvents(prev => [...prev, event]);
-    setNewEvent({
-      title: '',
-      time: '',
-      type: 'appuntamento',
-      description: '',
-      patientId: '',
-      serviceId: ''
+    const success = await createEvento({
+      titolo: newEvent.title,
+      data_evento: selectedDate.toISOString().split('T')[0],
+      orario: newEvent.time,
+      tipo: newEvent.type,
+      descrizione: newEvent.description || undefined,
+      paziente_id: newEvent.patientId || undefined,
+      prestazione_id: newEvent.serviceId || undefined
     });
-    setIsDialogOpen(false);
 
-    toast({
-      title: "Evento aggiunto",
-      description: `${event.title} programmato per ${format(selectedDate, 'dd MMMM yyyy', { locale: it })}`
-    });
+    if (success) {
+      setNewEvent({
+        title: '',
+        time: '',
+        type: 'appuntamento',
+        description: '',
+        patientId: '',
+        serviceId: ''
+      });
+      setIsDialogOpen(false);
+    }
   };
 
   const getEventTypeColor = (type: string) => {
@@ -433,16 +444,20 @@ export default function Calendario() {
                       
                       <div className="flex items-center gap-2">
                         {getStatusIcon(event.status)}
-                        {event.type !== 'scadenza' && (
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                         {event.type !== 'scadenza' && !event.invoiceId && (
+                           <div className="flex gap-1">
+                             <Button variant="ghost" size="sm">
+                               <Edit className="h-4 w-4" />
+                             </Button>
+                             <Button 
+                               variant="ghost" 
+                               size="sm"
+                               onClick={() => deleteEvento(event.id)}
+                             >
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
+                           </div>
+                         )}
                       </div>
                     </div>
                   ))}
