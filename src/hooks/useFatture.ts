@@ -99,7 +99,7 @@ export function useFatture() {
       if (error) throw error;
       setFatture(data || []);
     } catch (error) {
-      console.error('Error fetching fatture:', error);
+      console.error('Errore caricamento fatture:', error);
       toast({
         variant: "destructive",
         title: "Errore",
@@ -123,7 +123,7 @@ export function useFatture() {
       if (error) throw error;
       setPazienti(data || []);
     } catch (error) {
-      console.error('Error fetching pazienti:', error);
+      console.error('Errore caricamento pazienti:', error);
     }
   };
 
@@ -141,7 +141,7 @@ export function useFatture() {
       if (error) throw error;
       setPrestazioni(data || []);
     } catch (error) {
-      console.error('Error fetching prestazioni:', error);
+      console.error('Errore caricamento prestazioni:', error);
     }
   };
 
@@ -201,6 +201,7 @@ export function useFatture() {
           iva_percentuale: 0, // IVA esente per prestazioni sanitarie
           iva_importo: 0,
           totale: calcoli.totale,
+          metodo_pagamento: fatturaData.metodo_pagamento,
           note: fatturaData.note || null
         })
         .select()
@@ -273,7 +274,7 @@ export function useFatture() {
       
       return fattura;
     } catch (error) {
-      console.error('createFattura: Error:', error);
+      console.error('Errore creazione fattura:', error);
       toast({
         variant: "destructive",
         title: "Errore",
@@ -307,7 +308,7 @@ export function useFatture() {
       
       return data;
     } catch (error) {
-      console.error('Error updating fattura stato:', error);
+      console.error('Errore aggiornamento stato fattura:', error);
       toast({
         variant: "destructive",
         title: "Errore",
@@ -384,7 +385,7 @@ export function useFatture() {
       
       return nuovaFattura;
     } catch (error) {
-      console.error('Error duplicating fattura:', error);
+      console.error('Errore duplicazione fattura:', error);
       toast({
         variant: "destructive",
         title: "Errore",
@@ -412,7 +413,7 @@ export function useFatture() {
       
       return true;
     } catch (error) {
-      console.error('Error deleting fattura:', error);
+      console.error('Errore eliminazione fattura:', error);
       toast({
         variant: "destructive",
         title: "Errore",

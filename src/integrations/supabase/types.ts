@@ -277,6 +277,7 @@ export type Database = {
           id: string
           iva_importo: number
           iva_percentuale: number
+          metodo_pagamento: string | null
           note: string | null
           numero_fattura: string
           paziente_id: string
@@ -293,6 +294,7 @@ export type Database = {
           id?: string
           iva_importo?: number
           iva_percentuale?: number
+          metodo_pagamento?: string | null
           note?: string | null
           numero_fattura: string
           paziente_id: string
@@ -309,6 +311,7 @@ export type Database = {
           id?: string
           iva_importo?: number
           iva_percentuale?: number
+          metodo_pagamento?: string | null
           note?: string | null
           numero_fattura?: string
           paziente_id?: string

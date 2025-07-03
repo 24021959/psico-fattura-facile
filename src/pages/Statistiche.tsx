@@ -89,7 +89,7 @@ export default function Statistiche() {
 
   const generaReport = () => {
     // Implementazione futura per l'export
-    console.log("Generazione report...", { fatture: fatture.length, pazienti: pazienti.length });
+    // TODO: Implementare export report
   };
 
   return (

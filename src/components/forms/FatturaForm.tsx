@@ -150,7 +150,7 @@ export function FatturaForm({ fattura, trigger, pazientePreselezionato }: Fattur
         }
       }
     } catch (error) {
-      console.error('FatturaForm: Error in handleSubmit:', error);
+      console.error('Errore invio form fattura:', error);
     }
   };
 

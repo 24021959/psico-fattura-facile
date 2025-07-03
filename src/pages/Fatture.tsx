@@ -291,11 +291,8 @@ export default function Fatture() {
                         variant="outline" 
                         size="sm"
                         onClick={() => {
-                          console.log('Visualizza fattura clicked:', fattura);
                           // Usa anteprima per aprire in nuova tab invece di scaricare
                           import('../utils/fatturaPDF').then(({ anteprimaPDF }) => {
-                            console.log('PDF module loaded, preparing data...');
-                            console.log('Raw fattura data:', fattura);
                             
                             // Prepara i dati per il PDF con controlli di sicurezza
                             const paziente = fattura.paziente || {};
@@ -323,14 +320,13 @@ export default function Fatture() {
                               enpap: (Number(fattura.totale) || 0) - (Number(fattura.subtotale) || 0),
                               totale: Number(fattura.totale) || 0,
                               stato: fattura.stato || 'inviata',
-                              metodoPagamento: 'Non specificato'
+                              metodoPagamento: fattura.metodo_pagamento || 'Non specificato'
                             };
-                             console.log('Calling anteprimaPDF with data:', fatturaPerPDF);
                              anteprimaPDF(fatturaPerPDF, getProfessionistaData()).catch(error => {
-                              console.error('Error generating PDF:', error);
+                              console.error('Errore generazione PDF:', error);
                             });
                           }).catch(error => {
-                            console.error('Error loading PDF module:', error);
+                            console.error('Errore caricamento modulo PDF:', error);
                           });
                         }}
                       >
@@ -341,9 +337,7 @@ export default function Fatture() {
                         variant="outline" 
                         size="sm"
                         onClick={() => {
-                          console.log('Download PDF clicked:', fattura);
                           import('../utils/fatturaPDF').then(({ generaEScaricaPDF }) => {
-                            console.log('PDF module loaded for download, preparing data...');
                             
                             // Prepara i dati per il PDF con controlli di sicurezza
                             const paziente = fattura.paziente || {};
@@ -371,14 +365,13 @@ export default function Fatture() {
                               enpap: (Number(fattura.totale) || 0) - (Number(fattura.subtotale) || 0),
                               totale: Number(fattura.totale) || 0,
                               stato: fattura.stato || 'inviata',
-                              metodoPagamento: 'Non specificato'
+                              metodoPagamento: fattura.metodo_pagamento || 'Non specificato'
                             };
-                             console.log('Calling generaEScaricaPDF for download with data:', fatturaPerPDF);
                              generaEScaricaPDF(fatturaPerPDF, getProfessionistaData()).catch(error => {
-                              console.error('Error generating PDF for download:', error);
-                            });
-                          }).catch(error => {
-                            console.error('Error loading PDF module for download:', error);
+                               console.error('Errore generazione PDF download:', error);
+                             });
+                           }).catch(error => {
+                             console.error('Errore caricamento modulo PDF download:', error);
                           });
                         }}
                       >

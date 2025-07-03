@@ -40,11 +40,6 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={user ? <Index /> : <Welcome />} />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
-      } />
       <Route path="/pazienti" element={
         <ProtectedRoute>
           <Pazienti />

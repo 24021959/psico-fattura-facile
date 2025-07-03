@@ -16,10 +16,9 @@ export function DiaryUpgradeModal({ open, onOpenChange }: DiaryUpgradeModalProps
 
   const handleSelectPlan = async (planName: string) => {
     try {
-      console.log('Tentativo di creare checkout per piano:', planName);
       await createCheckoutSession(planName);
     } catch (error) {
-      console.error('Errore durante la creazione della sessione di checkout:', error);
+      console.error('Errore creazione sessione checkout:', error);
     }
   };
 
