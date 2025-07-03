@@ -68,6 +68,30 @@ export type Database = {
           },
         ]
       }
+      monthly_usage: {
+        Row: {
+          created_at: string
+          fatture_count: number | null
+          id: string
+          month_year: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          fatture_count?: number | null
+          id?: string
+          month_year: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          fatture_count?: number | null
+          id?: string
+          month_year?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       pazienti: {
         Row: {
           cap: string | null
@@ -330,12 +354,96 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          assistenza_prioritaria: boolean | null
+          backup_enabled: boolean | null
+          created_at: string
+          diario_clinico_enabled: boolean | null
+          id: string
+          max_fatture_mensili: number | null
+          name: string
+          price_monthly: number
+          stripe_price_id: string | null
+        }
+        Insert: {
+          assistenza_prioritaria?: boolean | null
+          backup_enabled?: boolean | null
+          created_at?: string
+          diario_clinico_enabled?: boolean | null
+          id?: string
+          max_fatture_mensili?: number | null
+          name: string
+          price_monthly: number
+          stripe_price_id?: string | null
+        }
+        Update: {
+          assistenza_prioritaria?: boolean | null
+          backup_enabled?: boolean | null
+          created_at?: string
+          diario_clinico_enabled?: boolean | null
+          id?: string
+          max_fatture_mensili?: number | null
+          name?: string
+          price_monthly?: number
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          fatture_count_mensile: number | null
+          id: string
+          plan_name: string
+          reset_fatture_data: string | null
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          fatture_count_mensile?: number | null
+          id?: string
+          plan_name: string
+          reset_fatture_data?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          fatture_count_mensile?: number | null
+          id?: string
+          plan_name?: string
+          reset_fatture_data?: string | null
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_monthly_usage: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

@@ -6,6 +6,9 @@ import { FatturaForm } from "@/components/forms/FatturaForm";
 import { useFatture } from "@/hooks/useFatture";
 import { usePazienti } from "@/hooks/usePazienti";
 import { usePrestazioni } from "@/hooks/usePrestazioni";
+import { useSubscription } from "@/hooks/useSubscription";
+import { SubscriptionBanner } from "@/components/subscription/SubscriptionBanner";
+import { UpgradeModal } from "@/components/subscription/UpgradeModal";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +18,7 @@ export default function Dashboard() {
   const { fatture, stats: fattureStats, loading: fattureLoading } = useFatture();
   const { pazienti, loading: pazientiLoading } = usePazienti();
   const { prestazioni, loading: prestazioniLoading } = usePrestazioni();
+  const { canCreateFattura, getCurrentPlan } = useSubscription();
 
   // Calcoli per statistiche aggiornate
   const currentMonth = new Date().getMonth();
@@ -33,6 +37,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Subscription Banner */}
+      <SubscriptionBanner />
+      
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
