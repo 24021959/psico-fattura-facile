@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, Eye, EyeOff, Heart, Mail } from "lucide-react";
+import { RegistrationWizard } from "@/components/auth/RegistrationWizard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,6 +44,9 @@ export default function Login() {
   // Reset password
   const [resetEmail, setResetEmail] = useState("");
   const [showResetForm, setShowResetForm] = useState(false);
+  
+  // Registration wizard
+  const [showRegistrationWizard, setShowRegistrationWizard] = useState(false);
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -109,6 +113,12 @@ export default function Login() {
       setError(result.error || "Errore durante l'invio dell'email");
     }
   };
+  if (showRegistrationWizard) {
+    return <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-success/5 flex items-center justify-center p-4">
+      <RegistrationWizard onClose={() => setShowRegistrationWizard(false)} />
+    </div>;
+  }
+
   if (showResetForm) {
     return <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-success/5 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
@@ -160,9 +170,8 @@ export default function Login() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="login">Accedi</TabsTrigger>
-              <TabsTrigger value="register">Registrati</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
@@ -202,71 +211,20 @@ export default function Login() {
                 </Button>
               </form>
             </TabsContent>
-            
-            <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4">
-                {error && <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>}
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome">Nome</Label>
-                    <Input id="nome" value={registerData.nome} onChange={e => setRegisterData({
-                    ...registerData,
-                    nome: e.target.value
-                  })} placeholder="Mario" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cognome">Cognome</Label>
-                    <Input id="cognome" value={registerData.cognome} onChange={e => setRegisterData({
-                    ...registerData,
-                    cognome: e.target.value
-                  })} placeholder="Rossi" required />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="registerEmail">Email</Label>
-                  <Input id="registerEmail" type="email" value={registerData.email} onChange={e => setRegisterData({
-                  ...registerData,
-                  email: e.target.value
-                })} placeholder="la-tua-email@esempio.it" required />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="registerPassword">Password</Label>
-                  <Input id="registerPassword" type="password" value={registerData.password} onChange={e => setRegisterData({
-                  ...registerData,
-                  password: e.target.value
-                })} placeholder="••••••••" required />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Conferma Password</Label>
-                  <Input id="confirmPassword" type="password" value={registerData.confirmPassword} onChange={e => setRegisterData({
-                  ...registerData,
-                  confirmPassword: e.target.value
-                })} placeholder="••••••••" required />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="terms" checked={registerData.acceptTerms} onChange={e => setRegisterData({
-                  ...registerData,
-                  acceptTerms: e.target.checked
-                })} className="rounded" />
-                  <Label htmlFor="terms" className="text-sm">
-                    Accetto i <a href="#" className="text-primary underline">termini e condizioni</a>
-                  </Label>
-                </div>
-
-                <Button type="submit" className="w-full medical-gradient text-primary-foreground" disabled={isLoading}>
-                  {isLoading ? "Registrazione..." : "Registrati"}
-                </Button>
-              </form>
-            </TabsContent>
           </Tabs>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              Non hai ancora un account?
+            </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowRegistrationWizard(true)}
+            >
+              Crea un nuovo account
+            </Button>
+          </div>
 
           
         </CardContent>
