@@ -286,6 +286,50 @@ export type Database = {
           },
         ]
       }
+      sedute_diario: {
+        Row: {
+          created_at: string
+          data_seduta: string
+          esercizio_assegnato: string | null
+          id: string
+          note_criptate: string | null
+          paziente_id: string
+          titolo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_seduta?: string
+          esercizio_assegnato?: string | null
+          id?: string
+          note_criptate?: string | null
+          paziente_id: string
+          titolo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_seduta?: string
+          esercizio_assegnato?: string | null
+          id?: string
+          note_criptate?: string | null
+          paziente_id?: string
+          titolo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sedute_diario_paziente_id_fkey"
+            columns: ["paziente_id"]
+            isOneToOne: false
+            referencedRelation: "pazienti"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

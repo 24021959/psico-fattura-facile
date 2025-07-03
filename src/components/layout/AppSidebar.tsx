@@ -9,7 +9,8 @@ import {
   Activity,
   Heart,
   TrendingUp,
-  Calendar
+  Calendar,
+  Notebook
 } from "lucide-react";
 
 import {
@@ -28,6 +29,7 @@ import {
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Pazienti", url: "/pazienti", icon: Users },
+  { title: "Diario Clinico", url: "/diario-clinico", icon: Notebook },
   { title: "Fatture", url: "/fatture", icon: FileText },
   { title: "Prestazioni", url: "/prestazioni", icon: Activity },
 ];

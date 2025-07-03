@@ -12,6 +12,7 @@ import Fatture from "./pages/Fatture";
 import Statistiche from "./pages/Statistiche";
 import Calendario from "./pages/Calendario";
 import Impostazioni from "./pages/Impostazioni";
+import DiarioClinico from "./pages/DiarioClinico";
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
@@ -65,6 +66,11 @@ function AppRoutes() {
       <Route path="/calendario" element={
         <ProtectedRoute>
           <Calendario />
+        </ProtectedRoute>
+      } />
+      <Route path="/diario-clinico" element={
+        <ProtectedRoute>
+          <DiarioClinico />
         </ProtectedRoute>
       } />
       <Route path="/impostazioni" element={
