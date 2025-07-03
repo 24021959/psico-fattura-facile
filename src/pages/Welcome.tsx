@@ -72,7 +72,7 @@ export default function Welcome() {
         "Supporto email"
       ],
       popular: false,
-      cta: "Prova Gratis",
+      cta: "Attiva Gratis",
       highlight: false
     },
     {
