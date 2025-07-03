@@ -5,7 +5,7 @@ import { FatturaForm } from "@/components/forms/FatturaForm";
 import { useFatture } from "@/hooks/useFatture";
 import { usePazienti } from "@/hooks/usePazienti";
 import { usePrestazioni } from "@/hooks/usePrestazioni";
-import { SubscriptionBanner } from "@/components/subscription/SubscriptionBanner";
+
 import { PlanStatusCard } from "@/components/dashboard/PlanStatusCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
@@ -34,9 +34,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Subscription Banner */}
-      <SubscriptionBanner />
-      
       {/* Plan Status */}
       <PlanStatusCard />
       
