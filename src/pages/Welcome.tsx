@@ -326,9 +326,9 @@ export default function Welcome() {
                     ))}
                   </ul>
                   
-                    <Button 
-                      className={`w-full ${plan.highlight ? 'bg-primary hover:bg-primary-hover text-primary-foreground' : ''}`}
-                      variant={plan.highlight ? 'default' : 'outline'}
+                  <Button 
+                    className={`w-full ${plan.highlight ? 'bg-primary hover:bg-primary-hover text-primary-foreground' : ''}`}
+                    variant={plan.highlight ? 'default' : 'outline'}
                     onClick={() => navigate('/login')}
                   >
                     {plan.cta}
