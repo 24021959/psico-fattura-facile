@@ -15,13 +15,17 @@ import {
   Clock,
   User,
   Activity,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useDiarioClinico } from "@/hooks/useDiarioClinico";
 import { usePazienti } from "@/hooks/usePazienti";
 import { SedutaForm } from "@/components/forms/SedutaForm";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 export function DiarioClinico() {
   const [selectedPaziente, setSelectedPaziente] = useState<string>("");
@@ -63,14 +67,23 @@ export function DiarioClinico() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <DashboardLayout>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col space-y-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Diario Clinico</h1>
-          <p className="text-muted-foreground">
-            Gestione confidenziale delle sedute e note cliniche dei pazienti
-          </p>
+        <div className="flex items-center gap-4">
+          <Link to="/dashboard">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Diario Clinico</h1>
+            <p className="text-muted-foreground">
+              Gestione confidenziale delle sedute e note cliniche dei pazienti
+            </p>
+          </div>
         </div>
 
         {/* Privacy Alert */}
@@ -279,7 +292,8 @@ export function DiarioClinico() {
           alle normative sulla privacy e protezione dei dati sanitari (GDPR).
         </AlertDescription>
       </Alert>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
 
