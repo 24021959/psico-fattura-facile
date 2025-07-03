@@ -40,10 +40,10 @@ export default function Dashboard() {
 
   // Genera messaggio di benvenuto personalizzato
   const getWelcomeMessage = () => {
-    if (!profile?.nome) return "Benvenuto nella piattaforma creata su misura per i bisogni dei professionisti della psicologia";
+    if (!profile?.nome) return "Benvenuto nel tuo gestionale sanitario";
     
     const gender = getGenderFromName(profile.nome);
-    const title = gender === 'F' ? 'Dottoressa' : 'Dottore';
+    const title = gender === 'F' ? 'Dott.ssa' : 'Dott.';
     const welcome = gender === 'F' ? 'Benvenuta' : 'Benvenuto';
     
     return `${welcome} ${title} ${profile.nome}`;

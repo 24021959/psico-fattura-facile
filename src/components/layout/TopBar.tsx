@@ -12,10 +12,35 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 
 export function TopBar() {
   const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
+  const { profile: userProfile } = useProfile();
+  
+  // Funzione per determinare il genere dal nome
+  const getGenderFromName = (nome: string): 'M' | 'F' => {
+    const femaleNames = [
+      'alessandra', 'anna', 'barbara', 'carla', 'chiara', 'cristina', 'elena', 'francesca', 
+      'giulia', 'laura', 'maria', 'monica', 'paola', 'roberta', 'sara', 'silvia', 'valentina',
+      'federica', 'giovanna', 'lucia', 'emanuela', 'lorena', 'daniela', 'claudia', 'veronica',
+      'sabrina', 'antonella', 'patrizia', 'manuela', 'elisa', 'raffaella', 'teresa', 'grazia',
+      'caterina', 'elisabetta', 'rosa', 'angela', 'franca', 'rita', 'donatella', 'simona'
+    ];
+    return femaleNames.includes(nome.toLowerCase()) ? 'F' : 'M';
+  };
+
+  // Genera messaggio di benvenuto personalizzato
+  const getWelcomeMessage = () => {
+    if (!userProfile?.nome) return "Benvenuto nel tuo gestionale sanitario";
+    
+    const gender = getGenderFromName(userProfile.nome);
+    const title = gender === 'F' ? 'Dott.ssa' : 'Dott.';
+    const welcome = gender === 'F' ? 'Benvenuta' : 'Benvenuto';
+    
+    return `${welcome} ${title} ${userProfile.nome}`;
+  };
   
   const handleLogout = async () => {
     await logout();
@@ -32,7 +57,7 @@ export function TopBar() {
         {/* Center section - can be used for search or current page title */}
         <div className="flex-1 flex items-center justify-center">
           <div className="text-sm text-muted-foreground hidden md:block">
-            Benvenuto nel tuo gestionale sanitario
+            {getWelcomeMessage()}
           </div>
         </div>
 
